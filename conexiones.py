@@ -46,8 +46,8 @@ provincias_espana = {
     "Bilbao": ["Vitoria", "Santander", "San sebastian", "Burgos"],
     "Zamora": ["Leon", "Orense", "Salamanca", "Valladolid", "Oporto"],
     "Zaragoza": ["Guadalajara", "Huesca", "Lleida", "Pamplona", "Soria", "Teruel", "Tarragona", "Logroño"],
-    "Oporto": ["Salamanca", "Pontevedra", "Orense", "Zamora"],
-    "Lisboa": ["Badajoz", "Caceres", "Huelva"],
+    "Oporto": ["Salamanca", "Pontevedra", "Orense", "Zamora", "Lisboa"],
+    "Lisboa": ["Badajoz", "Caceres", "Huelva", "Oporto"],
     "Andorra": ["Lleida", "Girona"],
     "Mataro": ["Barcelona", "Girona"]
 }
