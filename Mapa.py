@@ -1,19 +1,22 @@
 import folium as fo
 import ciudad as ci
 from conexiones import *
+
 # Crear el mapa centrado en España
 mapa = fo.Map(location=[40.0, -3.5], zoom_start=6)
-
-# Diccionario con las coordenadas de cada ciudad (esto es solo un ejemplo, debes completarlo)
-
 
 # Lista de conexiones, generada previamente con la función listar_conexiones
 conexiones = listar_conexiones(provincias_espana)
 
-# Añadir marcadores para cada ciudad con su popup
+# Añadir marcadores para cada ciudad con su popup y un icono específico
 for ciudad, coords in ci.Ubicaciones.items():
-    color = 'red' if ciudad == 'Mataro' else 'blue'
-    fo.Marker(location=coords, popup=ciudad, icon=fo.Icon(color=color)).add_to(mapa)
+    icon_color = 'red' if ciudad == 'Mataro' else 'blue'
+    
+    # Utilizar un icono de Font Awesome para los marcadores (icono de compás)
+    icon = fo.Icon(icon='warehouse', color=icon_color, prefix='fa')
+    
+    # Añadir el marcador
+    fo.Marker(location=coords, popup=ciudad, icon=icon).add_to(mapa)
 
 # Dibujar las líneas entre las conexiones
 for (ciudad1, ciudad2) in conexiones:
