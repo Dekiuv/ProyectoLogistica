@@ -51,3 +51,15 @@ provincias_espana = {
     "Andorra": ["Lleida", "Girona"],
     "Mataro": ["Barcelona", "Girona"]
 }
+
+def listar_conexiones(provincias_espana):
+    conexiones = set()  # Usamos un set para evitar duplicados
+    
+    for provincia, limítrofes in provincias_espana.items():
+        for limite in limítrofes:
+            # Ordenamos la conexión para evitar duplicados bidireccionales
+            conexion = tuple(sorted([provincia, limite]))
+            conexiones.add(conexion)
+    
+    # Convertimos el set a una lista de conexiones y la retornamos
+    return list(conexiones)
