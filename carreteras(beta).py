@@ -4,7 +4,7 @@ import folium
 
 # Definir las coordenadas de Mataró y Barcelona
 origen = (41.5381, 2.4445)  # Mataró
-destino = (42.1401, -0.4089)  # Huesca
+destino = (41.3851, 2.1734)  # Huesca
 
 # Descargar la red vial para la región de interés
 G = ox.graph_from_point(origen, dist=300000)

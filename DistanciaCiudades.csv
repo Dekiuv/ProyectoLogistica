@@ -1,0 +1,125 @@
+Ciudad1,Ciudad2,Distancia
+A Coruña,Lugo,79.55
+A Coruña,Pontevedra,105.35
+Vitoria,Burgos,100.73
+Vitoria,San Sebastian,76.07
+Vitoria,Logroño,45.76
+Vitoria,Pamplona,83.58
+Vitoria,Bilbao,51.43
+Albacete,Alicante,139.52
+Albacete,Ciudad Real,178.96
+Albacete,Cuenca,122.06
+Albacete,Murcia,128.08
+Albacete,Valencia,138.01
+Albacete,Jaen,215.62
+Alicante,Murcia,69.04
+Alicante,Valencia,125.39
+Almeria,Granada,107.76
+Almeria,Murcia,174.48
+Oviedo,Santander,165.11
+Oviedo,Leon,87.92
+Oviedo,Lugo,143.71
+Avila,Caceres,194.73
+Avila,Madrid,86.81
+Avila,Salamanca,89.7
+Avila,Segovia,57.76
+Avila,Toledo,104.27
+Avila,Valladolid,110.76
+Badajoz,Caceres,84.15
+Badajoz,Cordoba,220.46
+Badajoz,Huelva,179.84
+Badajoz,Sevilla,186.73
+Badajoz,Toledo,275.64
+Badajoz,Lisboa,188.73
+Barcelona,Girona,85.61
+Barcelona,Lleida,131.92
+Barcelona,Tarragona,83.1
+Barcelona,Mataro,28.28
+Burgos,Santander,124.7
+Burgos,Logroño,103.37
+Burgos,Leon,155.98
+Burgos,Palencia,77.97
+Burgos,Soria,120.16
+Burgos,Valladolid,114.56
+Burgos,Bilbao,119.62
+Burgos,Segovia,159.5
+Caceres,Salamanca,176.63
+Caceres,Toledo,205.24
+Caceres,Lisboa,253.07
+Cadiz,Huelva,100.35
+Cadiz,Malaga,168.06
+Cadiz,Sevilla,99.59
+Santander,Palencia,171.88
+Santander,Leon,172.1
+Santander,Bilbao,74.12
+Castellon,Tarragona,166.86
+Castellon,Teruel,98.04
+Castellon,Valencia,63.8
+Ciudad Real,Badajoz,263.52
+Ciudad Real,Cordoba,142.74
+Ciudad Real,Cuenca,195.28
+Ciudad Real,Jaen,134.56
+Ciudad Real,Toledo,98.03
+Cordoba,Jaen,88.17
+Cordoba,Malaga,133.57
+Cordoba,Sevilla,119.75
+Cordoba,Granada,130.73
+Cuenca,Guadalajara,107.03
+Cuenca,Madrid,138.41
+Cuenca,Toledo,162.7
+Cuenca,Valencia,164.66
+Cuenca,Teruel,92.59
+Girona,Lleida,187.2
+Girona,Andorra,122.22
+Girona,Mataro,58.56
+Granada,Jaen,68.96
+Granada,Malaga,88.95
+Granada,Murcia,235.58
+Granada,Albacete,253.11
+Guadalajara,Madrid,51.74
+Guadalajara,Soria,138.46
+Guadalajara,Teruel,176.77
+Guadalajara,Zaragoza,221.29
+Guadalajara,Segovia,86.82
+San Sebastian,Pamplona,62.23
+San Sebastian,Bilbao,76.76
+Huelva,Sevilla,86.08
+Huelva,Lisboa,251.73
+Huesca,Lleida,103.11
+Huesca,Pamplona,126.02
+Huesca,Zaragoza,67.56
+Logroño,Pamplona,76.19
+Logroño,Soria,77.97
+Logroño,Zaragoza,157.52
+Leon,Lugo,168.63
+Leon,Orense,190.65
+Leon,Palencia,107.64
+Leon,Valladolid,126.11
+Leon,Zamora,122.68
+Lleida,Tarragona,76.1
+Lleida,Zaragoza,125.47
+Lleida,Andorra,123.82
+Lugo,Orense,79.33
+Lugo,Pontevedra,109.99
+Madrid,Segovia,67.73
+Madrid,Toledo,67.46
+Malaga,Sevilla,157.36
+Pamplona,Zaragoza,143.61
+Orense,Pontevedra,65.01
+Orense,Zamora,198.29
+Orense,Oporto,145.53
+Palencia,Valladolid,42.91
+Pontevedra,Oporto,141.5
+Salamanca,Zamora,59.67
+Salamanca,Valladolid,109.11
+Salamanca,Oporto,249.49
+Segovia,Soria,164.52
+Segovia,Valladolid,94.18
+Soria,Zaragoza,131.76
+Tarragona,Teruel,216.12
+Tarragona,Zaragoza,187.5
+Teruel,Zaragoza,146.41
+Teruel,Valencia,115.31
+Valladolid,Zamora,86.43
+Zamora,Oporto,243.9
+Oporto,Lisboa,274.3
