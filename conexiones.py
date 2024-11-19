@@ -2,6 +2,7 @@ import heapq
 import ciudad as ci
 
 provincias_espana = {
+    "Andorra": ["Lleida", "Girona"],
     "A Coruña": ["Lugo", "Pontevedra"],
     "Vitoria": ["Burgos", "San Sebastian", "Logroño", "Pamplona", "Bilbao"],
     "Albacete": ["Alicante", "Ciudad Real", "Cuenca", "Murcia", "Valencia", "Jaen"],
