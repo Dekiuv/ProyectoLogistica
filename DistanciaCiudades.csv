@@ -1,4 +1,4 @@
-Ciudad1,Ciudad2,Distancia
+CiudadOrigen,CiudadDestino,Distancia (km)
 A Coruña,Lugo,79.55
 A Coruña,Pontevedra,105.35
 Vitoria,Burgos,100.73
@@ -30,7 +30,7 @@ Badajoz,Cordoba,220.46
 Badajoz,Huelva,179.84
 Badajoz,Sevilla,186.73
 Badajoz,Toledo,275.64
-Badajoz,Lisboa,188.73
+Badajoz,Evora,89.1
 Barcelona,Girona,85.61
 Barcelona,Lleida,131.92
 Barcelona,Tarragona,83.1
@@ -45,7 +45,8 @@ Burgos,Bilbao,119.62
 Burgos,Segovia,159.5
 Caceres,Salamanca,176.63
 Caceres,Toledo,205.24
-Caceres,Lisboa,253.07
+Caceres,Castelo branco,103.2
+Caceres,Portalegre,93.25
 Cadiz,Huelva,100.35
 Cadiz,Malaga,168.06
 Cadiz,Sevilla,99.59
@@ -84,7 +85,8 @@ Guadalajara,Segovia,86.82
 San Sebastian,Pamplona,62.23
 San Sebastian,Bilbao,76.76
 Huelva,Sevilla,86.08
-Huelva,Lisboa,251.73
+Huelva,Faro,91.42
+Huelva,Beja,116.47
 Huesca,Lleida,103.11
 Huesca,Pamplona,126.02
 Huesca,Zaragoza,67.56
@@ -107,12 +109,15 @@ Malaga,Sevilla,157.36
 Pamplona,Zaragoza,143.61
 Orense,Pontevedra,65.01
 Orense,Zamora,198.29
-Orense,Oporto,145.53
+Orense,Viana do castelo,107.29
+Orense,Braga,98.7
+Orense,Braganca,108.7
 Palencia,Valladolid,42.91
-Pontevedra,Oporto,141.5
+Pontevedra,Viana do castelo,83.43
 Salamanca,Zamora,59.67
 Salamanca,Valladolid,109.11
-Salamanca,Oporto,249.49
+Salamanca,Braganca,130.23
+Salamanca,Guarda,143.28
 Segovia,Soria,164.52
 Segovia,Valladolid,94.18
 Soria,Zaragoza,131.76
@@ -121,5 +126,37 @@ Tarragona,Zaragoza,187.5
 Teruel,Zaragoza,146.41
 Teruel,Valencia,115.31
 Valladolid,Zamora,86.43
-Zamora,Oporto,243.9
-Oporto,Lisboa,274.3
+Zamora,Braganca,90.63
+Viana do castelo,Braga,37.81
+Braga,Porto,46.99
+Braga,Vila real,62.83
+Vila real,Orense,115.51
+Vila real,Porto,75.69
+Vila real,Braganca,99.5
+Vila real,Viseu,72.47
+Braganca,Viseu,159.66
+Braganca,Guarda,147.33
+Porto,Viseu,81.9
+Porto,Aveiro,57.57
+Aveiro,Viseu,62.82
+Aveiro,Coimbra,51.4
+Viseu,Guarda,56.08
+Viseu,Coimbra,66.61
+Guarda,Castelo branco,81.78
+Guarda,Coimbra,105.03
+Coimbra,Leiria,61.14
+Coimbra,Castelo branco,90.85
+Castelo branco,Portalegre,58.98
+Castelo branco,Santarem,121.4
+Castelo branco,Leiria,112.81
+Leiria,Lisboa,117.71
+Leiria,Santarem,57.38
+Santarem,Setubal,81.2
+Santarem,Evora,99.83
+Santarem,Portalegre,108.15
+Santarem,Lisboa,69.85
+Portalegre,Evora,91.11
+Evora,Setubal,85.2
+Evora,Beja,61.51
+Setubal,Beja,106.39
+Beja,Faro,110.88
