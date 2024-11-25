@@ -3,7 +3,7 @@ import ciudad as ci
 from conexiones import listar_conexiones, dijkstra, provincias_espana
 
 # Crear el mapa centrado en España
-mapa = fo.Map(location=[40.0, -3.5], zoom_start=6)
+mapa = fo.Map(location=[40.0, 3], zoom_start=6)
 
 # Lista de conexiones, generada previamente con la función listar_conexiones
 conexiones = listar_conexiones(provincias_espana)

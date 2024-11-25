@@ -8,6 +8,8 @@ cursor = conn.cursor()
 
 #INSERTAR LOCALIZACIONES
 
+#UBICACIONES
+
 # Abrir el archivo CSV
 with open('Ubicacion.csv', newline='', encoding='utf-8') as csvfile:
     reader = csv.reader(csvfile)
@@ -28,10 +30,80 @@ with open('Ubicacion.csv', newline='', encoding='utf-8') as csvfile:
 # Confirmar los cambios
 conn.commit()
 
-# Cerrar la conexión
-# conn.close()
-
 print("Datos insertados correctamente en la tabla Locations.")
+
+# CLIENTES
+
+# Abrir el archivo CSV
+with open('clientes.csv', newline='', encoding='utf-8') as csvfile:
+    reader = csv.reader(csvfile)
+    next(reader)  # Para saltar la primera línea de cabecera
+
+    # Insertar los datos en la tabla Locations
+    for row in reader:
+        client_id = row[0] # Reemplazar la coma por punto para el formato decimal
+        name = row[1]  # Reemplazar la coma por punto para el formato decimal
+
+        # Insertar los datos en la tabla Locations
+        cursor.execute('''
+            INSERT INTO Clients (client_id, name)
+            VALUES (?, ?)
+        ''', (client_id, name))
+
+# Confirmar los cambios
+conn.commit()
+
+print("Datos insertados correctamente en la tabla Clients.")
+
+
+# PRODUCTO
+
+# Abrir el archivo CSV
+with open('products.csv', newline='', encoding='utf-8') as csvfile:
+    reader = csv.reader(csvfile)
+    next(reader)  # Para saltar la primera línea de cabecera
+
+    # Insertar los datos en la tabla Locations
+    for row in reader:
+        product_id = row[0]
+        name = row[1]
+        price = row[2].replace(',', '.')
+        manufacturing_time = row[3]
+        expiration_from_manufacturing = row[4]
+
+        # Insertar los datos en la tabla Locations
+        cursor.execute('''
+            INSERT INTO Products (product_id, name, price, manufacturing_time, expiration_from_manufacturing)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (product_id, name, price, manufacturing_time, expiration_from_manufacturing))
+
+# Confirmar los cambios
+conn.commit()
+
+print("Datos insertados correctamente en la tabla Products.")
+# LINES
+
+# Abrir el archivo CSV
+with open('lines.csv', newline='', encoding='utf-8') as csvfile:
+    reader = csv.reader(csvfile)
+    next(reader)  # Para saltar la primera línea de cabecera
+
+    # Insertar los datos en la tabla Locations
+    for row in reader:
+        line_id = row[0]
+        product_id = row[1]
+        quantity = row[2]
+
+        # Insertar los datos en la tabla Locations
+        cursor.execute('''
+            INSERT INTO Lines (line_id, product_id, quantity)
+            VALUES (?, ?, ?)
+        ''', (line_id, product_id, quantity))
+
+# Confirmar los cambios
+conn.commit()
+
+print("Datos insertados correctamente en la tabla Lines.")
 
 #INSERTAR CONEXIONES
 
