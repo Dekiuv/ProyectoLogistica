@@ -63,9 +63,9 @@ provincias_espana = {
     "Leiria": ["Lisboa", "Santarem", "Castelo branco", "Coimbra"],
     "Santarem": ["Setubal", "Evora", "Portalegre", "Castelo branco", "Leiria", "Lisboa"],
     "Portalegre": ["Caceres", "Evora", "Santarem", "Castelo branco"],
-    "Lisboa": ["Leiria", "Santarem"],
+    "Lisboa": ["Leiria", "Santarem", "Setubal"],
     "Evora": ["Badajoz", "Setubal", "Beja", "Santarem", "Portalegre"],
-    "Setubal": ["Beja", "Evora", "Santarem"],
+    "Setubal": ["Beja", "Evora", "Santarem", "Lisboa"],
     "Beja": ["Huelva", "Faro", "Setubal", "Evora"],
     "Faro": ["Huelva", "Beja"]
 }
