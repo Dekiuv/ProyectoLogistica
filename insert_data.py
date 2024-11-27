@@ -11,7 +11,7 @@ cursor = conn.cursor()
 #UBICACIONES
 
 # Abrir el archivo CSV
-with open('Ubicacion.csv', newline='', encoding='utf-8') as csvfile:
+with open('./Data/Ubicacion.csv', newline='', encoding='utf-8') as csvfile:
     reader = csv.reader(csvfile)
     next(reader)  # Para saltar la primera línea de cabecera
 
@@ -35,7 +35,7 @@ print("Datos insertados correctamente en la tabla Locations.")
 # CLIENTES
 
 # Abrir el archivo CSV
-with open('clientes.csv', newline='', encoding='utf-8') as csvfile:
+with open('./Data/clientes.csv', newline='', encoding='utf-8') as csvfile:
     reader = csv.reader(csvfile)
     next(reader)  # Para saltar la primera línea de cabecera
 
@@ -59,7 +59,7 @@ print("Datos insertados correctamente en la tabla Clients.")
 # PRODUCTO
 
 # Abrir el archivo CSV
-with open('products.csv', newline='', encoding='utf-8') as csvfile:
+with open('./Data/products.csv', newline='', encoding='utf-8') as csvfile:
     reader = csv.reader(csvfile)
     next(reader)  # Para saltar la primera línea de cabecera
 
@@ -84,7 +84,7 @@ print("Datos insertados correctamente en la tabla Products.")
 # LINES
 
 # Abrir el archivo CSV
-with open('lines.csv', newline='', encoding='utf-8') as csvfile:
+with open('./Data/lines.csv', newline='', encoding='utf-8') as csvfile:
     reader = csv.reader(csvfile)
     next(reader)  # Para saltar la primera línea de cabecera
 
@@ -108,7 +108,7 @@ print("Datos insertados correctamente en la tabla Lines.")
 # SHIPMENTS
 
 # Abrir el archivo CSV
-with open('shipments.csv', newline='', encoding='utf-8') as csvfile:
+with open('./Data/shipments.csv', newline='', encoding='utf-8') as csvfile:
     reader = csv.reader(csvfile)
     next(reader)  # Para saltar la primera línea de cabecera
 
@@ -129,24 +129,23 @@ with open('shipments.csv', newline='', encoding='utf-8') as csvfile:
 # Confirmar los cambios
 conn.commit()
 
-print("Datos insertados correctamente en la tabla Products.")
 
 # CONSTANTS
 
 # INSERTAR CONSTANTES EN LA TABLA Constants
-cursor.execute('''
-INSERT INTO Constants (velocity, workday_time, rest_time, drivers_hourly_pay, fuel_cost_km, truck_capacity)
-VALUES (?, ?, ?, ?, ?, ?)''',
-(80.5, 8, 1, 15.75, 1.20, 5000))
+# cursor.execute('''
+# INSERT INTO Constants (velocity, workday_time, rest_time, drivers_hourly_pay, fuel_cost_km, truck_capacity)
+# VALUES (?, ?, ?, ?, ?, ?)''',
+# (80.5, 8, 1, 15.75, 1.20, 5000))
 
 # Abrir el archivo CSV
-with open('constants.csv', newline='', encoding='utf-8') as csvfile:
+with open('./Data/constants.csv', newline='', encoding='utf-8') as csvfile:
     reader = csv.reader(csvfile)
     next(reader)  # Para saltar la primera línea de cabecera
 
     # Insertar los datos en la tabla Locations
     for row in reader:
-        constant_id = row[0]
+        # constant_id = row[0]
         velocity = row[1]
         workday_time = row[2]
         rest_time = row[3]
@@ -156,9 +155,9 @@ with open('constants.csv', newline='', encoding='utf-8') as csvfile:
 
         # Insertar los datos en la tabla Locations
         cursor.execute('''
-            INSERT INTO Constants (constant_id, velocity, workday_time, rest_time, drivers_hourly_pay, fuel_cost_km, truck_capacity)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (constant_id, velocity, workday_time, rest_time, drivers_hourly_pay, fuel_cost_km, truck_capacity))
+            INSERT INTO Constants (velocity, workday_time, rest_time, drivers_hourly_pay, fuel_cost_km, truck_capacity)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (velocity, workday_time, rest_time, drivers_hourly_pay, fuel_cost_km, truck_capacity))
 
 # Confirmar los cambios
 conn.commit()
