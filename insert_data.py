@@ -105,6 +105,60 @@ conn.commit()
 
 print("Datos insertados correctamente en la tabla Lines.")
 
+# SHIPMENTS
+
+# Abrir el archivo CSV
+with open('shipments.csv', newline='', encoding='utf-8') as csvfile:
+    reader = csv.reader(csvfile)
+    next(reader)  # Para saltar la primera línea de cabecera
+
+    # Insertar los datos en la tabla Locations
+    for row in reader:
+        shipment_id = row[0]
+        date = row[1]
+        client_id = row[2]
+        location_id = row[3]
+        line_id = row[4]
+
+        # Insertar los datos en la tabla Locations
+        cursor.execute('''
+            INSERT INTO Shipments (shipment_id, date, client_id, location_id, line_id)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (shipment_id, date, client_id, location_id, line_id))
+
+# Confirmar los cambios
+conn.commit()
+
+print("Datos insertados correctamente en la tabla Products.")
+
+# CONSTANTS
+
+# Abrir el archivo CSV
+with open('constants.csv', newline='', encoding='utf-8') as csvfile:
+    reader = csv.reader(csvfile)
+    next(reader)  # Para saltar la primera línea de cabecera
+
+    # Insertar los datos en la tabla Locations
+    for row in reader:
+        constant_id = row[0]
+        velocity = row[1]
+        workday_time = row[2]
+        rest_time = row[3]
+        drivers_hourly_pay = row[4]
+        fuel_cost_km = row[5]
+        truck_capacity = row[6]
+
+        # Insertar los datos en la tabla Locations
+        cursor.execute('''
+            INSERT INTO Constants (constant_id, velocity, workday_time, rest_time, drivers_hourly_pay, fuel_cost_km, truck_capacity)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (constant_id, velocity, workday_time, rest_time, drivers_hourly_pay, fuel_cost_km, truck_capacity))
+
+# Confirmar los cambios
+conn.commit()
+
+print("Datos insertados correctamente en la tabla Products.")
+
 #INSERTAR CONEXIONES
 
 # Función para obtener el location_id de una provincia por su nombre
