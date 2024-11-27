@@ -133,6 +133,12 @@ print("Datos insertados correctamente en la tabla Products.")
 
 # CONSTANTS
 
+# INSERTAR CONSTANTES EN LA TABLA Constants
+cursor.execute('''
+INSERT INTO Constants (velocity, workday_time, rest_time, drivers_hourly_pay, fuel_cost_km, truck_capacity)
+VALUES (?, ?, ?, ?, ?, ?)''',
+(80.5, 8, 1, 15.75, 1.20, 5000))
+
 # Abrir el archivo CSV
 with open('constants.csv', newline='', encoding='utf-8') as csvfile:
     reader = csv.reader(csvfile)
