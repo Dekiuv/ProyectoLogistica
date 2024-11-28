@@ -112,7 +112,7 @@ with open('./Data/shipments.csv', newline='', encoding='utf-8') as csvfile:
     reader = csv.reader(csvfile)
     next(reader)  # Para saltar la primera línea de cabecera
 
-    # Insertar los datos en la tabla Locations
+    # Insertar los datos en la tabla Shipments
     for row in reader:
         shipment_id = row[0]
         date = row[1]
@@ -120,11 +120,16 @@ with open('./Data/shipments.csv', newline='', encoding='utf-8') as csvfile:
         location_id = row[3]
         line_id = row[4]
 
-        # Insertar los datos en la tabla Locations
-        cursor.execute('''
-            INSERT INTO Shipments (shipment_id, date, client_id, location_id, line_id)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (shipment_id, date, client_id, location_id, line_id))
+        # Consultar el nombre de la ubicación a partir del location_id
+        cursor.execute('SELECT name FROM Locations WHERE location_id = ?', (location_id,))
+        location_name = cursor.fetchone()
+
+        # Verificar si la ubicación no es "Mataró" antes de insertar
+        if location_name and location_name[0] != "Mataró":
+            cursor.execute('''
+                INSERT INTO Shipments (shipment_id, date, client_id, location_id, line_id)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (shipment_id, date, client_id, location_id, line_id))
 
 # Confirmar los cambios
 conn.commit()
