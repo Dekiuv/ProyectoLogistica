@@ -2,11 +2,11 @@ from sklearn.cluster import KMeans
 import numpy as np
 import matplotlib.pyplot as plt
 from dijkstra import dijkstra
-from truck_operations import create_new_truck, assign_shipments_to_truck
+from truck_operations import create_new_truck, assign_shipments_to_truck, create_next_driver
 import datetime
 
 # Simulate shipments with clustering approach and automatic optimization of clusters
-def simulate_shipments_with_clustering(trucks, shipments, constants, connections, locations, driver):
+def simulate_shipments_with_clustering(trucks, shipments, constants, connections, locations):
     today = datetime.date.today()
     optimal_clusters = 1
     lowest_cost = float('inf')
@@ -24,7 +24,7 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
     coordinates = np.array([(location.get_latitude(), location.get_longitude()) for location in locations])
 
     # Iterate through possible numbers of clusters to find the optimal one
-    for num_clusters in range(1, len(locations)):  # Try from 1 to 10 clusters
+    for num_clusters in range(1, len(locations)):  # Try from 1 to len(locations) clusters
         kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(coordinates)
         labels = kmeans.labels_
 
@@ -53,10 +53,11 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
             shipments_sorted = sorted(cluster_shipments, key=lambda s: s.get_line().get_product().get_manufacturing_time() + s.get_line().get_product().get_expiration_from_manufacturing())
 
             # Create a new truck for each cluster (or reuse if possible)
-            current_truck = create_new_truck(len(used_trucks) + 1, driver, constants)
+            current_truck = create_new_truck(len(used_trucks) + 1, create_next_driver(), constants)
             used_trucks.append(current_truck)
 
-            route = []
+            route = []  # Complete route including intermediate points
+            delivery_points = []  # Only final delivery points (i.e., shipment destinations)
             route_cost = 0
 
             for shipment in shipments_sorted:
@@ -122,19 +123,27 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                     assigned_locations.add(location)
                 else:
                     # If the current truck cannot handle the shipment, create a new truck for overflow
-                    new_truck = create_new_truck(len(used_trucks) + 1, driver, constants)
+                    new_truck = create_new_truck(len(used_trucks) + 1, create_next_driver(), constants)
                     assign_shipments_to_truck(new_truck, same_location_shipments)
                     assigned_locations.add(location)
                     used_trucks.append(new_truck)
 
-                # Update route information
-                route.append(location.get_name())
+                # Update route information, including all intermediate locations
+                for loc in path:
+                    if loc.get_name() not in route:
+                        route.append(loc.get_name())
+
+                # Add the final delivery point
+                delivery_points.append(location.get_name())
 
             # Store truck route and cost information
             truck_routes.append({
                 "truck_id": current_truck.get_truck_id(),
-                "route": " -> ".join(route),
-                "route_cost": route_cost
+                "route": " -> ".join(route),  # Full route including intermediate points
+                "delivery_points": delivery_points,  # Only delivery points
+                "full_route": route,  # List of all route points (intermediate and final)
+                "route_cost": route_cost,
+                "driver": current_truck.get_driver().get_name()
             })
 
         # Check if the current clustering configuration has a lower cost
@@ -151,6 +160,8 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
     for truck_route in best_truck_routes:
         print(f"Truck {truck_route['truck_id']} Route: {truck_route['route']}")
         print(f"Route Cost: {truck_route['route_cost']:.2f} €")
+        print(f"Driver: {truck_route['driver']}")
+        print(f"Delivery Points: {truck_route['delivery_points']}")
+        print(f"Full Route: {truck_route['full_route']}")
 
     return best_truck_routes, best_simulation_cost
-
