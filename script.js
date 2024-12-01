@@ -1,85 +1,89 @@
-document.addEventListener("DOMContentLoaded", function() {
-    // Botón para generar la ruta
-    const generateRouteButton = document.getElementById('generateRoute');
-    const routeMapIframe = document.getElementById('routeMap');
-    const individualMapsContainer = document.getElementById('buttons-container'); // Contenedor para los botones individuales
-    const generalRouteButton = document.getElementById('generalRouteButton');
+document.addEventListener("DOMContentLoaded", function () {
+    const generateRouteButton = document.getElementById("generateRoute");
+    const routeMapIframe = document.getElementById("routeMap");
+    const individualMapsContainer = document.getElementById("buttons-container");
+    const generalRouteButton = document.getElementById("generalRouteButton");
 
-    generateRouteButton.addEventListener('click', function() {
+    generateRouteButton.addEventListener("click", function () {
         routeMapIframe.src = "";
 
-        // Limpiar los botones anteriores de rutas de camiones y la descripción de las rutas
+        // Limpiar los botones anteriores y el contenedor de detalles
         individualMapsContainer.innerHTML = "";
-        document.getElementById('route-details-container')?.remove();
+        document.getElementById("route-details-container")?.remove();
 
-        // Hacer una solicitud GET al servidor Python para generar la ruta
-        fetch('http://localhost:8000/generar_ruta')
-            .then(response => {
+        // Hacer una solicitud GET al servidor Python
+        fetch("http://localhost:8000/generar_ruta")
+            .then((response) => {
                 if (response.ok) {
-                    return response.json(); // Recibir los datos como JSON
+                    return response.json();
                 } else {
-                    throw new Error('Error al generar la ruta');
+                    throw new Error("Error al generar la ruta");
                 }
             })
-            .then(data => {
-                // Cargar el mapa general en el iframe principal
+            .then((data) => {
+                // Cargar el mapa general
                 routeMapIframe.src = "LogisticaPeninsula.html";
 
-                // Generar los botones para cada ruta individual
-                const totalTrucks = data.routes.length; // Número de camiones y rutas
+                // Generar botones para cada ruta
+                const totalTrucks = data.routes.length;
                 for (let i = 0; i < totalTrucks; i++) {
                     const routeData = data.routes[i];
 
-                    // Crear un botón para cada ruta de camión
-                    const button = document.createElement('button');
+                    // Crear botón con margen uniforme
+                    const button = document.createElement("button");
                     button.textContent = `Ruta Camión ${routeData.truck_id}`;
-                    button.style.display = 'block';
-                    button.style.marginBottom = '10px';
+                    button.className =
+                        "w-full px-4 py-2 bg-[var(--teal)] text-white rounded-lg shadow-md hover:bg-[var(--persian-green)] transition mb-2";
 
-                    // Asignar evento para mostrar la ruta del camión correspondiente en el iframe y mostrar los detalles
-                    button.addEventListener('click', function() {
+                    // Asignar evento para cargar el mapa y mostrar detalles
+                    button.addEventListener("click", function () {
                         routeMapIframe.src = `Maps/Truck_${routeData.truck_id}_Route.html`;
 
-                        // Crear o actualizar el contenedor de detalles de la ruta
-                        let routeDetailsContainer = document.getElementById('route-details-container');
+                        // Crear o actualizar el contenedor de detalles
+                        let routeDetailsContainer = document.getElementById("route-details-container");
                         if (!routeDetailsContainer) {
-                            routeDetailsContainer = document.createElement('div');
-                            routeDetailsContainer.id = 'route-details-container';
-                            document.body.appendChild(routeDetailsContainer);
-                        }
-                        
-                        // Limpiar el contenido previo
-                        routeDetailsContainer.innerHTML = '';
+                            routeDetailsContainer = document.createElement("div");
+                            routeDetailsContainer.id = "route-details-container";
+                            routeDetailsContainer.className =
+                                "mt-4 bg-[var(--white)] border-2 border-[var(--teal)] rounded-lg p-4 shadow-md";
 
-                        // Añadir la información de la ruta
+                            // Insertar el contenedor debajo del mapa
+                            const mapSection = document.getElementById("map-section");
+                            mapSection.appendChild(routeDetailsContainer);
+                        }
+
+                        // Limpiar el contenido previo
+                        routeDetailsContainer.innerHTML = "";
+
+                        // Añadir información de la ruta
                         const routeInfo = `
-                            <h3>Detalles de la Ruta del Camión ${routeData.truck_id}</h3>
+                            <h3 class="text-lg font-semibold text-[var(--teal)] mb-2">Detalles de la Ruta del Camión ${routeData.truck_id}</h3>
                             <p><strong>Conductor:</strong> ${routeData.driver}</p>
-                            <p><strong>Ruta Completa:</strong> ${routeData.full_route}</p>
-                            <p><strong>Puntos de Entrega:</strong> ${routeData.delivery_points.join(', ')}</p>
+                            <p><strong>Ruta Completa:</strong> ${routeData.route}</p>
+                            <p><strong>Puntos de Entrega:</strong> ${routeData.delivery_points.join(", ")}</p>
                             <p><strong>Costo de la Ruta:</strong> ${routeData.route_cost.toFixed(2)} €</p>
                         `;
                         routeDetailsContainer.innerHTML = routeInfo;
                     });
 
-                    // Añadir cada botón al contenedor de botones individuales
+                    // Añadir botón al contenedor
                     individualMapsContainer.appendChild(button);
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Hubo un problema al intentar generar la ruta.');
+            .catch((error) => {
+                console.error("Error:", error);
+                alert("Hubo un problema al intentar generar la ruta.");
             });
     });
 
-    // Botón "Ruta General" para volver al mapa general
-    generalRouteButton.addEventListener('click', function() {
+    // Botón "Ruta General"
+    generalRouteButton.addEventListener("click", function () {
         routeMapIframe.src = "LogisticaPeninsula.html";
 
-        // Limpiar los detalles de la ruta si existen
-        const routeDetailsContainer = document.getElementById('route-details-container');
+        // Limpiar los detalles de la ruta
+        const routeDetailsContainer = document.getElementById("route-details-container");
         if (routeDetailsContainer) {
-            routeDetailsContainer.innerHTML = '';
+            routeDetailsContainer.innerHTML = "";
         }
     });
 });
