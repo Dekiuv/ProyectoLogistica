@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Limpiar los botones anteriores y el contenedor de detalles
         individualMapsContainer.innerHTML = "";
         document.getElementById("route-details-container")?.remove();
+        document.getElementById("general-details-container")?.remove();
 
         // Hacer una solicitud GET al servidor Python
         fetch("http://localhost:8000/generar_ruta")
@@ -23,6 +24,27 @@ document.addEventListener("DOMContentLoaded", function () {
             .then((data) => {
                 // Cargar el mapa general
                 routeMapIframe.src = "LogisticaPeninsula.html";
+
+                // Crear o actualizar el contenedor de detalles generales
+                let generalDetailsContainer = document.getElementById("general-details-container");
+                if (!generalDetailsContainer) {
+                    generalDetailsContainer = document.createElement("div");
+                    generalDetailsContainer.id = "general-details-container";
+                    generalDetailsContainer.className =
+                        "mt-4 bg-[var(--white)] border-2 border-[var(--teal)] rounded-lg p-4 shadow-md";
+
+                    // Insertar el contenedor debajo del mapa
+                    const mapSection = document.getElementById("map-section");
+                    mapSection.appendChild(generalDetailsContainer);
+                }
+
+                // Añadir información general sobre las rutas (Número total de camiones y costo total)
+                const totalCost = data.routes.reduce((acc, route) => acc + route.route_cost, 0).toFixed(2);
+                generalDetailsContainer.innerHTML = `
+                    <h3 class="text-lg font-semibold text-[var(--teal)] mb-2">Información General</h3>
+                    <p><strong>Total de Camiones:</strong> ${data.routes.length}</p>
+                    <p><strong>Costo Total de las Rutas:</strong> ${totalCost} €</p>
+                `;
 
                 // Generar botones para cada ruta
                 const totalTrucks = data.routes.length;
@@ -77,7 +99,6 @@ document.addEventListener("DOMContentLoaded", function () {
                                     }).join('')}
                                 </ol>
                             </details>
-                            <p><strong>Puntos de Entrega:</strong> ${routeData.delivery_points.join(", ")}</p>
                             <p><strong>Costo de la Ruta:</strong> ${routeData.route_cost.toFixed(2)} €</p>
                             <p><strong>Total de Envíos:</strong> ${routeData.total_shipments}</p>
                         `;
@@ -92,10 +113,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         `;
 
                         routeData.shipments.forEach((shipment, index) => {
+                            // Asignar el destino al envío. Se asume que el destino es uno de los puntos de entrega.
+                            const destination = routeData.delivery_points[index % routeData.delivery_points.length] || 'Destino desconocido';
+
                             shipmentsInfo += `
                                 <details class="mb-2 bg-white p-2 rounded-lg shadow">
                                     <summary><strong>Envío ${index + 1} - ID: ${shipment.shipment_id}</strong></summary>
                                     <ul class="ml-4 mt-2 list-disc">
+                                        <li><strong>Destino:</strong> ${destination} 🚚</li>
                                         <li><strong>ID del Producto:</strong> ${shipment.product.product_id}</li>
                                         <li><strong>Nombre del Producto:</strong> ${shipment.product.name}</li>
                                         <li><strong>Cantidad:</strong> ${shipment.quantity}</li>
