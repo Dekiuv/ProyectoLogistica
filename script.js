@@ -63,12 +63,53 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <summary class="font-semibold text-[var(--lapis-lazuli)] cursor-pointer">
                                     Ruta Completa
                                 </summary>
-                                <p class="mt-2 text-gray-700">${routeData.full_route}</p>
+                                <ol class="mt-2 text-gray-700 list-decimal ml-5">
+                                    ${routeData.full_route.map((location, index) => {
+                                        const isDeliveryPoint = routeData.delivery_points.includes(location);
+                                        return `
+                                            <li class="mb-1">
+                                                <strong>Punto ${index + 1}:</strong> 
+                                                <span class="${isDeliveryPoint ? 'text-[var(--persian-green)] font-bold' : ''}">
+                                                    ${location} ${isDeliveryPoint ? '🚚' : ''}
+                                                </span>
+                                            </li>
+                                        `;
+                                    }).join('')}
+                                </ol>
                             </details>
                             <p><strong>Puntos de Entrega:</strong> ${routeData.delivery_points.join(", ")}</p>
                             <p><strong>Costo de la Ruta:</strong> ${routeData.route_cost.toFixed(2)} €</p>
+                            <p><strong>Total de Envíos:</strong> ${routeData.total_shipments}</p>
                         `;
-                        routeDetailsContainer.innerHTML = routeInfo;
+
+                        // Añadir información de los envíos al contenedor de detalles
+                        let shipmentsInfo = `
+                            <details class="bg-gray-100 p-3 rounded-lg shadow-md mb-2">
+                                <summary class="font-semibold text-[var(--lapis-lazuli)] cursor-pointer">
+                                    Envíos del Camión
+                                </summary>
+                                <div class="mt-2 text-gray-700">
+                        `;
+
+                        routeData.shipments.forEach((shipment, index) => {
+                            shipmentsInfo += `
+                                <details class="mb-2 bg-white p-2 rounded-lg shadow">
+                                    <summary><strong>Envío ${index + 1} - ID: ${shipment.shipment_id}</strong></summary>
+                                    <ul class="ml-4 mt-2 list-disc">
+                                        <li><strong>ID del Producto:</strong> ${shipment.product.product_id}</li>
+                                        <li><strong>Nombre del Producto:</strong> ${shipment.product.name}</li>
+                                        <li><strong>Cantidad:</strong> ${shipment.quantity}</li>
+                                        <li><strong>Tiempo de Fabricación:</strong> ${shipment.product.manufacturing_time} días</li>
+                                        <li><strong>Vencimiento desde Fabricación:</strong> ${shipment.product.expiration} días</li>
+                                    </ul>
+                                </details>
+                            `;
+                        });
+
+                        shipmentsInfo += `</div></details>`;
+
+                        // Combinar información de ruta e información de envíos
+                        routeDetailsContainer.innerHTML = routeInfo + shipmentsInfo;
                     });
 
                     // Añadir botón al contenedor
