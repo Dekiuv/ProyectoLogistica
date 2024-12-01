@@ -5,7 +5,69 @@ document.addEventListener("DOMContentLoaded", function () {
     const generalRouteButton = document.getElementById("generalRouteButton");
     let costChart = null;  // Variable para almacenar la instancia del gráfico
 
+    // Crear e insertar el indicador de carga (barra de progreso y spinner)
+    const loadingContainer = document.createElement("div");
+    loadingContainer.id = "loadingContainer";
+    loadingContainer.className = "fixed top-0 left-0 w-full h-full flex items-center justify-center bg-[rgba(255,255,255,0.8)] hidden";
+    loadingContainer.innerHTML = `
+        <div class="text-center flex flex-col items-center">
+            <div class="loader ease-linear rounded-full border-8 border-t-8 border-[var(--teal)] h-16 w-16 mb-4"></div>
+            <h2 class="text-[var(--teal)] text-xl font-semibold mb-2">Generando rutas...</h2>
+            <p class="text-[var(--teal)] mb-4">Por favor, espere un momento.</p>
+            <div class="progress-bar-container w-3/4">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(loadingContainer);
+
+    // Estilos CSS para el loader y barra de progreso
+    const loaderStyle = document.createElement("style");
+    loaderStyle.innerHTML = `
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spinner 1s linear infinite;
+            animation: spinner 1s linear infinite;
+        }
+
+        @-webkit-keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar-container {
+            width: 80%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: #3498db;
+            animation: progressBar 3s ease-in-out infinite;
+        }
+
+        @keyframes progressBar {
+            0% { width: 0; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+    `;
+    document.head.appendChild(loaderStyle);
+
     generateRouteButton.addEventListener("click", function () {
+        // Mostrar el indicador de carga
+        loadingContainer.classList.remove("hidden");
+
         routeMapIframe.src = "";
 
         // Limpiar los botones anteriores y el contenedor de detalles
@@ -26,6 +88,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             })
             .then((data) => {
+                // Ocultar el indicador de carga
+                loadingContainer.classList.add("hidden");
+
                 // Cargar el mapa general
                 routeMapIframe.src = "LogisticaPeninsula.html";
 
@@ -33,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let generalDetailsContainer = document.createElement("div");
                 generalDetailsContainer.id = "general-details-container";
                 generalDetailsContainer.className =
-                    "mt-4 bg-[var(--white)] border-2 border-[var(--teal)] rounded-lg p-4 shadow-md";
+                    "mt-4 bg-[var(--white)] border-2 border-[var(--teal)] rounded-lg p-4 shadow-md fade-in";
 
                 // Insertar el contenedor debajo del mapa
                 const mapSection = document.getElementById("map-section");
@@ -144,7 +209,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             routeDetailsContainer = document.createElement("div");
                             routeDetailsContainer.id = "route-details-container";
                             routeDetailsContainer.className =
-                                "mt-4 bg-[var(--white)] border-2 border-[var(--teal)] rounded-lg p-4 shadow-md";
+                                "mt-4 bg-[var(--white)] border-2 border-[var(--teal)] rounded-lg p-4 shadow-md fade-in";
 
                             // Insertar el contenedor debajo del mapa
                             mapSection.appendChild(routeDetailsContainer);
@@ -218,6 +283,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             })
             .catch((error) => {
+                // Ocultar el indicador de carga en caso de error
+                loadingContainer.classList.add("hidden");
+
                 console.error("Error:", error);
                 // Mostrar un mensaje de error con SweetAlert2
                 Swal.fire({
