@@ -77,18 +77,36 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch((error) => {
                 console.error("Error:", error);
-                alert("Hubo un problema al intentar generar la ruta.");
+                // Mostrar un mensaje de error con SweetAlert2
+                Swal.fire({
+                    icon: 'error',
+                    title: '¡Ups!',
+                    text: 'Hubo un problema al intentar generar la ruta.',
+                    confirmButtonText: 'Aceptar'
+                });
             });
     });
 
     // Botón "Ruta General"
     generalRouteButton.addEventListener("click", function () {
-        routeMapIframe.src = "LogisticaPeninsula.html";
+        // Mostrar confirmación de SweetAlert antes de redirigir
+        Swal.fire({
+            title: '¿Volver al mapa general?',
+            text: "Se perderán los detalles de la ruta actual.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, volver',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                routeMapIframe.src = "LogisticaPeninsula.html";
 
-        // Limpiar los detalles de la ruta
-        const routeDetailsContainer = document.getElementById("route-details-container");
-        if (routeDetailsContainer) {
-            routeDetailsContainer.innerHTML = "";
-        }
+                // Limpiar los detalles de la ruta
+                const routeDetailsContainer = document.getElementById("route-details-container");
+                if (routeDetailsContainer) {
+                    routeDetailsContainer.innerHTML = "";
+                }
+            }
+        });
     });
 });
