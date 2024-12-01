@@ -59,7 +59,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         const routeInfo = `
                             <h3 class="text-lg font-semibold text-[var(--teal)] mb-2">Detalles de la Ruta del Camión ${routeData.truck_id}</h3>
                             <p><strong>Conductor:</strong> ${routeData.driver}</p>
-                            <p><strong>Ruta Completa:</strong> ${routeData.route}</p>
+                            <details class="bg-gray-100 p-3 rounded-lg shadow-md mb-2">
+                                <summary class="font-semibold text-[var(--lapis-lazuli)] cursor-pointer">
+                                    Ruta Completa
+                                </summary>
+                                <p class="mt-2 text-gray-700">${routeData.full_route}</p>
+                            </details>
                             <p><strong>Puntos de Entrega:</strong> ${routeData.delivery_points.join(", ")}</p>
                             <p><strong>Costo de la Ruta:</strong> ${routeData.route_cost.toFixed(2)} €</p>
                         `;
