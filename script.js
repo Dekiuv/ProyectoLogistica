@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const routeMapIframe = document.getElementById("routeMap");
     const individualMapsContainer = document.getElementById("buttons-container");
     const generalRouteButton = document.getElementById("generalRouteButton");
+    let costChart = null;  // Variable para almacenar la instancia del gráfico
 
     generateRouteButton.addEventListener("click", function () {
         routeMapIframe.src = "";
@@ -11,6 +12,9 @@ document.addEventListener("DOMContentLoaded", function () {
         individualMapsContainer.innerHTML = "";
         document.getElementById("route-details-container")?.remove();
         document.getElementById("general-details-container")?.remove();
+        if (costChart) {
+            costChart.destroy();  // Destruir el gráfico si ya existe uno
+        }
 
         // Hacer una solicitud GET al servidor Python
         fetch("http://localhost:8000/generar_ruta")
@@ -26,17 +30,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 routeMapIframe.src = "LogisticaPeninsula.html";
 
                 // Crear o actualizar el contenedor de detalles generales
-                let generalDetailsContainer = document.getElementById("general-details-container");
-                if (!generalDetailsContainer) {
-                    generalDetailsContainer = document.createElement("div");
-                    generalDetailsContainer.id = "general-details-container";
-                    generalDetailsContainer.className =
-                        "mt-4 bg-[var(--white)] border-2 border-[var(--teal)] rounded-lg p-4 shadow-md";
+                let generalDetailsContainer = document.createElement("div");
+                generalDetailsContainer.id = "general-details-container";
+                generalDetailsContainer.className =
+                    "mt-4 bg-[var(--white)] border-2 border-[var(--teal)] rounded-lg p-4 shadow-md";
 
-                    // Insertar el contenedor debajo del mapa
-                    const mapSection = document.getElementById("map-section");
-                    mapSection.appendChild(generalDetailsContainer);
-                }
+                // Insertar el contenedor debajo del mapa
+                const mapSection = document.getElementById("map-section");
+                mapSection.appendChild(generalDetailsContainer);
 
                 // Añadir información general sobre las rutas (Número total de camiones y costo total)
                 const totalCost = data.routes.reduce((acc, route) => acc + route.route_cost, 0).toFixed(2);
@@ -44,7 +45,77 @@ document.addEventListener("DOMContentLoaded", function () {
                     <h3 class="text-lg font-semibold text-[var(--teal)] mb-2">Información General</h3>
                     <p><strong>Total de Camiones:</strong> ${data.routes.length}</p>
                     <p><strong>Costo Total de las Rutas:</strong> ${totalCost} €</p>
+                    <div class="mt-4">
+                        <canvas id="costChart" width="400" height="200"></canvas>
+                    </div>
                 `;
+
+                // Crear el gráfico combinado de costos por ruta y envíos
+                const ctx = document.getElementById('costChart').getContext('2d');
+                const truckLabels = data.routes.map(route => `Camión ${route.truck_id}`);
+                const truckCosts = data.routes.map(route => route.route_cost);
+                const truckShipments = data.routes.map(route => route.total_shipments);
+
+                costChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: truckLabels,
+                        datasets: [
+                            {
+                                label: 'Costo por Ruta (€)',
+                                data: truckCosts,
+                                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y',
+                            },
+                            {
+                                label: 'Cantidad de Envíos',
+                                data: truckShipments,
+                                type: 'line',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 2,
+                                yAxisID: 'y1',
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Costo (€)'
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Cantidad de Envíos'
+                                },
+                                grid: {
+                                    drawOnChartArea: false, // Solo mostrar la cuadrícula principal
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Camiones'
+                                }
+                            }
+                        }
+                    }
+                });
 
                 // Generar botones para cada ruta
                 const totalTrucks = data.routes.length;
@@ -61,7 +132,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     button.addEventListener("click", function () {
                         routeMapIframe.src = `Maps/Truck_${routeData.truck_id}_Route.html`;
 
-                        // Crear o actualizar el contenedor de detalles
+                        // Minimizar o eliminar el contenedor de detalles generales
+                        const generalDetailsContainer = document.getElementById("general-details-container");
+                        if (generalDetailsContainer) {
+                            generalDetailsContainer.style.display = "none";
+                        }
+
+                        // Crear o actualizar el contenedor de detalles de la ruta específica
                         let routeDetailsContainer = document.getElementById("route-details-container");
                         if (!routeDetailsContainer) {
                             routeDetailsContainer = document.createElement("div");
@@ -70,7 +147,6 @@ document.addEventListener("DOMContentLoaded", function () {
                                 "mt-4 bg-[var(--white)] border-2 border-[var(--teal)] rounded-lg p-4 shadow-md";
 
                             // Insertar el contenedor debajo del mapa
-                            const mapSection = document.getElementById("map-section");
                             mapSection.appendChild(routeDetailsContainer);
                         }
 
@@ -166,6 +242,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }).then((result) => {
             if (result.isConfirmed) {
                 routeMapIframe.src = "LogisticaPeninsula.html";
+
+                // Mostrar nuevamente los detalles generales
+                const generalDetailsContainer = document.getElementById("general-details-container");
+                if (generalDetailsContainer) {
+                    generalDetailsContainer.style.display = "block";
+                }
 
                 // Limpiar los detalles de la ruta
                 const routeDetailsContainer = document.getElementById("route-details-container");
