@@ -37,12 +37,7 @@ def dijkstra(locations, connections, start_location_name, target_location_name, 
                 path.insert(0, node)
                 node = previous_nodes[node.get_location_id()]
 
-            # Print the final result before returning
-            path_str = " -> ".join([loc.get_name() for loc in path])
-            print(f"Returning total time: {current_time} hours")
-            print(f"Returning total distance: {current_distance} km")
-            print(f"Returning path: {path_str}")
-            
+            # Return the total travel time, distance, and path as an array of `Location` objects
             return current_time, current_distance, path
 
         # Iterate over all connections to find neighbors
@@ -81,3 +76,4 @@ def dijkstra(locations, connections, start_location_name, target_location_name, 
     # If no path is found, print and return infinity
     print("No path found. Returning infinity.")
     return float('inf'), float('inf'), []
+

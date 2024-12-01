@@ -159,7 +159,6 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
             # Store truck route, cost, shipment, and product information
             truck_routes.append({
                 "truck_id": current_truck.get_truck_id(),
-                "route": " -> ".join(route),  # Full route including intermediate points
                 "delivery_points": delivery_points,  # Only delivery points
                 "full_route": route,  # List of all route points (intermediate and final)
                 "route_cost": route_cost,
@@ -193,7 +192,7 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
     print(f"Number of discarded shipments: {len(best_discarded_shipments)}")
 
     for truck_route in best_truck_routes:
-        print(f"Truck {truck_route['truck_id']} Route: {truck_route['route']}")
+        print(f"Truck {truck_route['truck_id']}")
         print(f"Route Cost: {truck_route['route_cost']:.2f} €")
         print(f"Driver: {truck_route['driver']}")
         print(f"Delivery Points: {truck_route['delivery_points']}")
