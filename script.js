@@ -3,7 +3,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const routeMapIframe = document.getElementById("routeMap");
     const individualMapsContainer = document.getElementById("buttons-container");
     const generalRouteButton = document.getElementById("generalRouteButton");
+    const mapSection = document.getElementById("map-section");
+    const buttonsSection = document.getElementById("buttons-section");
     let costChart = null;  // Variable para almacenar la instancia del gráfico
+
+    // Inicialmente ocultar el iframe del mapa y el contenedor de las rutas
+    mapSection.style.display = "none";
+    buttonsSection.style.display = "none";
 
     // Crear e insertar el indicador de carga (barra de progreso y spinner)
     const loadingContainer = document.createElement("div");
@@ -68,7 +74,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Mostrar el indicador de carga
         loadingContainer.classList.remove("hidden");
 
-        routeMapIframe.src = "";
+        // Ocultar el mapa y los contenedores antes de generar la ruta
+        mapSection.style.display = "none";
+        buttonsSection.style.display = "none";
 
         // Limpiar los botones anteriores y el contenedor de detalles
         individualMapsContainer.innerHTML = "";
@@ -91,6 +99,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Ocultar el indicador de carga
                 loadingContainer.classList.add("hidden");
 
+                // Mostrar el mapa y los contenedores después de generar las rutas
+                mapSection.style.display = "block";
+                buttonsSection.style.display = "block";
+
                 // Cargar el mapa general
                 routeMapIframe.src = "LogisticaPeninsula.html";
 
@@ -101,7 +113,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     "mt-4 bg-[var(--white)] border-2 border-[var(--teal)] rounded-lg p-4 shadow-md fade-in";
 
                 // Insertar el contenedor debajo del mapa
-                const mapSection = document.getElementById("map-section");
                 mapSection.appendChild(generalDetailsContainer);
 
                 // Añadir información general sobre las rutas (Número total de camiones y costo total)
@@ -169,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     text: 'Cantidad de Envíos'
                                 },
                                 grid: {
-                                    drawOnChartArea: false, // Solo mostrar la cuadrícula principal
+                                    drawOnChartArea: false,
                                 }
                             },
                             x: {
@@ -231,7 +242,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                         const isDeliveryPoint = routeData.delivery_points.includes(location);
                                         return `
                                             <li class="mb-1">
-                                                <strong>Punto ${index + 1}:</strong> 
+                                                                                                <strong>Punto ${index + 1}:</strong> 
                                                 <span class="${isDeliveryPoint ? 'text-[var(--persian-green)] font-bold' : ''}">
                                                     ${location} ${isDeliveryPoint ? '🚚' : ''}
                                                 </span>
@@ -326,3 +337,4 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
