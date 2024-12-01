@@ -22,7 +22,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             trucks = [create_new_truck(1, driver, constants)]
 
             # Run the simulation
-            routes, total_cost = simulate_shipments_with_clustering(trucks, shipments, constants, connections, locations)
+            routes, total_cost, discarded_shipments = simulate_shipments_with_clustering(trucks, shipments, constants, connections, locations)
 
             # Clear the Maps folder
             maps_folder = 'Maps'
@@ -114,9 +114,21 @@ class RequestHandler(BaseHTTPRequestHandler):
             print(f"Mapa general guardado en {general_map_path}")
 
             # Prepare the response data
+            discarded_shipments_info = [{
+                "shipment_id": shipment.get_shipment_id(),
+                "reason": "Expired before delivery" if shipment in discarded_shipments else "No valid path found",
+                "product": {"product_id": shipment.get_line().get_product().get_product_id(),
+                            "product_name":shipment.get_line().get_product().get_name(),
+                            "manufacturing_time":shipment.get_line().get_product().get_manufacturing_time(),
+                            "expiration_from_manufacturing":shipment.get_line().get_product().get_expiration_from_manufacturing(),
+                            }
+            } for shipment in discarded_shipments           
+            ]
+
             response_data = {
                 "routes": routes,
-                "total_cost": total_cost
+                "total_cost": total_cost,
+                "discarded_shipments": discarded_shipments_info
             }
 
             # Send the response

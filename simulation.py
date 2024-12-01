@@ -12,6 +12,7 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
     lowest_cost = float('inf')
     best_truck_routes = []
     best_simulation_cost = 0
+    best_discarded_shipments = []  # To track discarded shipments for the best configuration
 
     # Constants for the simulation
     velocity = constants[0].get_velocity()  # Velocity of the truck in km/h
@@ -42,6 +43,7 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
         used_trucks = []
         assigned_locations = set()
         truck_routes = []
+        discarded_shipments = []  # Track discarded shipments for this configuration
         total_simulation_cost = 0
 
         # Iterate through each cluster and simulate shipments for that cluster
@@ -69,10 +71,12 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                 # Skip shipment if location is None
                 if location is None:
                     print("Warning: Shipment location is None, skipping shipment.")
+                    discarded_shipments.append(shipment)
                     continue
 
                 # Skip if location already assigned to a truck
                 if location in assigned_locations:
+                    discarded_shipments.append(shipment)
                     continue
 
                 # Find all shipments for the same location
@@ -91,6 +95,7 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                 # Check if no path was found
                 if total_distance == float('inf'):
                     print(f"Warning: No valid path found from {last_location.get_name()} to {location.get_name()}. Skipping shipment.")
+                    discarded_shipments.append(shipment)
                     continue
 
                 # Calculate number of rest periods needed
@@ -105,6 +110,7 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                 if days_needed > days_until_expiration:
                     print(f"Warning: Shipment {shipment.get_shipment_id()} with product {product.get_name()} cannot reach destination on time. Skipping shipment.", 
                           f"Days needed: {days_needed}, days_until_expiration: {days_until_expiration}")
+                    discarded_shipments.append(shipment)
                     continue
 
                 # Calculate the costs for this route
@@ -152,10 +158,12 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
             optimal_clusters = num_clusters
             best_truck_routes = truck_routes
             best_simulation_cost = total_simulation_cost
+            best_discarded_shipments = discarded_shipments
 
     # Print the optimal configuration and truck routes
     print(f"Optimal number of clusters: {optimal_clusters}")
     print(f"Total cost of all shipments: {best_simulation_cost:.2f} €")
+    print(f"Number of discarded shipments: {len(best_discarded_shipments)}")
 
     for truck_route in best_truck_routes:
         print(f"Truck {truck_route['truck_id']} Route: {truck_route['route']}")
@@ -164,4 +172,4 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
         print(f"Delivery Points: {truck_route['delivery_points']}")
         print(f"Full Route: {truck_route['full_route']}")
 
-    return best_truck_routes, best_simulation_cost
+    return best_truck_routes, best_simulation_cost, best_discarded_shipments
