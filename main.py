@@ -5,6 +5,8 @@ from truck_operations import create_new_truck
 from Models.Driver import Driver
 import folium as fo
 import json
+import os
+import shutil
 
 class RequestHandler(BaseHTTPRequestHandler):
 
@@ -22,8 +24,14 @@ class RequestHandler(BaseHTTPRequestHandler):
             # Run the simulation
             routes, total_cost = simulate_shipments_with_clustering(trucks, shipments, constants, connections, locations)
 
-            # Create the map centered in Spain
-            mapa = fo.Map(location=[40.0, -3.0], zoom_start=6)
+            # Clear the Maps folder
+            maps_folder = 'Maps'
+            if os.path.exists(maps_folder):
+                shutil.rmtree(maps_folder)
+            os.makedirs(maps_folder)
+
+            # Create the general map centered in Spain
+            general_map = fo.Map(location=[40.0, -3.0], zoom_start=6)
 
             # Extract coordinates for locations
             location_coords = {location.get_name(): (location.get_latitude(), location.get_longitude()) for location in locations}
@@ -31,13 +39,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             # List of vibrant colors for trucks (compatible with folium.Icon)
             truck_colors = ['red', 'blue', 'green', 'purple', 'orange', 'darkred', 'cadetblue', 'darkblue', 'darkgreen', 'black']
 
-            # Set to keep track of all locations involved in deliveries (final delivery points)
-            delivery_locations = set()
-
-            # Dictionary to keep track of the number of times each location has been visited and their colors
-            location_visits = {}
-
-            # Draw routes from simulation
+            # Draw routes from simulation and generate individual maps for each truck
             for index, truck_route in enumerate(routes):
                 delivery_points = truck_route["delivery_points"]
                 full_route = truck_route["full_route"]
@@ -45,71 +47,71 @@ class RequestHandler(BaseHTTPRequestHandler):
                 # Assign a color for each truck based on its index
                 truck_color = truck_colors[index % len(truck_colors)]
 
-                # Highlight the full route with the truck's color
+                # Highlight the full route on the general map with the truck's color
                 route_coords = [location_coords[loc_name] for loc_name in full_route if loc_name in location_coords]
-                fo.PolyLine(locations=route_coords, color=truck_color, weight=5, opacity=0.8).add_to(mapa)
+                fo.PolyLine(locations=route_coords, color=truck_color, weight=5, opacity=0.8).add_to(general_map)
 
-                # Add markers for each delivery point in the route with numbers indicating order
+                # Add warehouse icons for each delivery point on the general map
+                for point in delivery_points:
+                    if point in location_coords:
+                        fo.Marker(
+                            location=location_coords[point],
+                            popup=point,
+                            icon=fo.Icon(icon='warehouse', color=truck_color, prefix='fa')
+                        ).add_to(general_map)
+
+                # Create an individual map for this truck
+                individual_map = fo.Map(location=[40.0, -3.0], zoom_start=6)
+                fo.PolyLine(locations=route_coords, color=truck_color, weight=5, opacity=0.8).add_to(individual_map)
+
+                # Add markers for each delivery point in the route with numbers indicating order on the individual map
                 for order, point in enumerate(full_route, start=1):
                     if point in location_coords:
-                        # Determine if the point is a final delivery point or an intermediate one
+                        # Calculate offset for markers to avoid overlap
+                        offset_lat = 0.004 * (order % 2)  # Alternating latitude offset
+                        offset_lng = 0.004 * (order % 3)  # Alternating longitude offset
+
+                        # Marker for order number with color and black border for individual map only
+                        marker_html = f"""
+                            <div style="font-size: 14pt; color: {truck_color}; font-weight: bold; text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;">
+                                {order}
+                            </div>
+                        """
+
+                        # Add the order number above the marker with offset to the individual map
+                        fo.Marker(
+                            location=(
+                                location_coords[point][0] + offset_lat,
+                                location_coords[point][1] + offset_lng
+                            ),
+                            icon=fo.DivIcon(html=marker_html)
+                        ).add_to(individual_map)
+
+                        # Add warehouse icon for delivery points to the individual map
                         if point in delivery_points:
-                            # Track delivery points
-                            delivery_locations.add(point)
-
-                            # Determine offset based on the number of times this location has been visited
-                            if point not in location_visits:
-                                location_visits[point] = {
-                                    "count": 0,
-                                    "colors": []
-                                }
-
-                            # Increment visit count and store color
-                            location_visits[point]["count"] += 1
-                            location_visits[point]["colors"].append(truck_color)
-
-                            offset_index = location_visits[point]["count"] - 1
-
-                            # Calculate offset for the label to prevent overlap (increase offset for better separation)
-                            offset_lat = 0.004 * (offset_index + 1)  # Significant increase in latitude offset per visit
-                            offset_lng = 0.004 * (offset_index + 1)  # Significant increase in longitude offset per visit
-
-                            # Alternate offset direction for better distribution
-                            if offset_index % 2 == 0:
-                                offset_lat = -offset_lat
-                            if (offset_index // 2) % 2 == 0:
-                                offset_lng = -offset_lng
-
-                            # Add the order number above the marker with offset and truck color, including a black border
-                            fo.Marker(
-                                location=(
-                                    location_coords[point][0] + offset_lat,
-                                    location_coords[point][1] + offset_lng
-                                ),
-                                icon=fo.DivIcon(html=f"""
-                                    <div style="font-size: 14pt; color: {truck_color}; font-weight: bold; text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;">
-                                        {order}
-                                    </div>
-                                """)
-                            ).add_to(mapa)
-
-                            # Use folium Icon with Font Awesome 'warehouse' and the truck's color for final delivery points
                             fo.Marker(
                                 location=location_coords[point],
                                 popup=point,
                                 icon=fo.Icon(icon='warehouse', color=truck_color, prefix='fa')
-                            ).add_to(mapa)
+                            ).add_to(individual_map)
 
-            # Add a special marker for Mataró
+                # Save individual map to Maps folder
+                individual_map_path = f'{maps_folder}/Truck_{index + 1}_Route.html'
+                individual_map.save(individual_map_path)
+                print(f"Mapa individual para el camión {index + 1} guardado en {individual_map_path}")
+
+            # Add a special marker for Mataró to the general map
             if "Mataró" in location_coords:
                 fo.Marker(
                     location=location_coords["Mataró"],
                     popup="Mataró",
                     icon=fo.Icon(icon='home', color='blue', prefix='fa')
-                ).add_to(mapa)
+                ).add_to(general_map)
 
-            # Save the map to an HTML file
-            mapa.save('LogisticaPeninsula.html')
+            # Save the general map to an HTML file
+            general_map_path = 'LogisticaPeninsula.html'
+            general_map.save(general_map_path)
+            print(f"Mapa general guardado en {general_map_path}")
 
             # Prepare the response data
             response_data = {

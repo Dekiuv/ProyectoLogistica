@@ -4,13 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logística Peninsula</title>
+    <style>
+        #container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        #map-section {
+            flex: 3;
+        }
+        #buttons-section {
+            flex: 1;
+            margin-left: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Logística de la Península</h1>
     <button id="generateRoute">Generar Ruta</button>
     <br><br>
-    <iframe id="routeMap" src="" width="800" height="600" style="border:none;"></iframe>
-
+    <div id="container">
+        <div id="map-section">
+            <iframe id="routeMap" src="" width="800" height="600" style="border:none;"></iframe>
+        </div>
+        <div id="buttons-section">
+            <h3>Rutas de Camiones</h3>
+            <button id="generalRouteButton" style="margin-bottom: 10px;">Ruta General</button>
+            <div id="buttons-container" style="margin-top: 10px;"></div>
+        </div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
