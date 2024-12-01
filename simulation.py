@@ -61,6 +61,7 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
             route = []  # Complete route including intermediate points
             delivery_points = []  # Only final delivery points (i.e., shipment destinations)
             route_cost = 0
+            truck_shipments = []  # Track the shipments assigned to this truck
 
             for shipment in shipments_sorted:
                 location = shipment.get_location()
@@ -90,32 +91,21 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                     return
 
                 # Calculate shortest distance and time to the destination using Dijkstra
-                total_time_with_rest, total_distance, path = dijkstra(locations, connections, last_location.get_name(), location.get_name(), velocity, workday_time, rest_time)
+                total_time, total_distance, path = dijkstra(locations, connections, last_location.get_name(), location.get_name(), velocity, workday_time, rest_time)
 
-                # Check if no path was found
-                if total_distance == float('inf'):
-                    print(f"Warning: No valid path found from {last_location.get_name()} to {location.get_name()}. Skipping shipment.")
-                    discarded_shipments.append(shipment)
-                    continue
-
-                # Calculate number of rest periods needed
-                num_rest_periods = int(total_time_with_rest / workday_time)
-                total_rest_time = num_rest_periods * rest_time
-
-                # Final time including the rest time
-                total_time_with_rest = (total_distance / velocity) + total_rest_time
-                days_needed = total_time_with_rest / workday_time
-
+                # Calculate the total time required in days including rest periods
+                total_days = total_time / workday_time
+                print(f"{total_days}  = {total_time} / {workday_time}")
                 # Check if the shipment can be delivered before product expiration
-                if days_needed > days_until_expiration:
+                if total_days > days_until_expiration:
                     print(f"Warning: Shipment {shipment.get_shipment_id()} with product {product.get_name()} cannot reach destination on time. Skipping shipment.", 
-                          f"Days needed: {days_needed}, days_until_expiration: {days_until_expiration}")
+                          f"Days needed: {total_days}, days_until_expiration: {days_until_expiration}")
                     discarded_shipments.append(shipment)
                     continue
 
                 # Calculate the costs for this route
                 fuel_cost = total_distance * fuel_cost_per_km
-                driver_cost = (total_time_with_rest) * drivers_hourly_pay
+                driver_cost = total_time * drivers_hourly_pay
                 total_route_cost = fuel_cost + driver_cost
 
                 # Accumulate total cost of all routes in the simulation
@@ -127,12 +117,36 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                 if current_truck.get_capacity() >= total_quantity:
                     assign_shipments_to_truck(current_truck, same_location_shipments)
                     assigned_locations.add(location)
+                    # Add shipments and product info to the truck's record
+                    for s in same_location_shipments:
+                        truck_shipments.append({
+                            "shipment_id": s.get_shipment_id(),
+                            "quantity": s.get_line().get_quantity(),
+                            "product": {
+                                "product_id": s.get_line().get_product().get_product_id(),
+                                "name": s.get_line().get_product().get_name(),
+                                "expiration": s.get_line().get_product().get_expiration_from_manufacturing(),
+                                "manufacturing_time": s.get_line().get_product().get_manufacturing_time()
+                            }
+                        })
                 else:
                     # If the current truck cannot handle the shipment, create a new truck for overflow
                     new_truck = create_new_truck(len(used_trucks) + 1, create_next_driver(), constants)
                     assign_shipments_to_truck(new_truck, same_location_shipments)
                     assigned_locations.add(location)
                     used_trucks.append(new_truck)
+                    # Add shipments and product info to the truck's record
+                    for s in same_location_shipments:
+                        truck_shipments.append({
+                            "shipment_id": s.get_shipment_id(),
+                            "quantity": s.get_line().get_quantity(),
+                            "product": {
+                                "product_id": s.get_line().get_product().get_product_id(),
+                                "name": s.get_line().get_product().get_name(),
+                                "expiration": s.get_line().get_product().get_expiration_from_manufacturing(),
+                                "manufacturing_time": s.get_line().get_product().get_manufacturing_time()
+                            }
+                        })
 
                 # Update route information, including all intermediate locations
                 for loc in path:
@@ -142,14 +156,16 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                 # Add the final delivery point
                 delivery_points.append(location.get_name())
 
-            # Store truck route and cost information
+            # Store truck route, cost, shipment, and product information
             truck_routes.append({
                 "truck_id": current_truck.get_truck_id(),
                 "route": " -> ".join(route),  # Full route including intermediate points
                 "delivery_points": delivery_points,  # Only delivery points
                 "full_route": route,  # List of all route points (intermediate and final)
                 "route_cost": route_cost,
-                "driver": current_truck.get_driver().get_name()
+                "driver": current_truck.get_driver().get_name(),
+                "total_shipments": len(truck_shipments),  # Total number of shipments on the truck
+                "shipments": truck_shipments  # Shipments assigned to this truck with product details
             })
 
         # Check if the current clustering configuration has a lower cost
@@ -159,6 +175,17 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
             best_truck_routes = truck_routes
             best_simulation_cost = total_simulation_cost
             best_discarded_shipments = discarded_shipments
+
+    # Remove shipments from discarded list if they are actually on a truck
+    assigned_shipments_details = set(
+        (shipment["shipment_id"], shipment["product"]["product_id"])
+        for truck in best_truck_routes
+        for shipment in truck["shipments"]
+    )
+    best_discarded_shipments = [
+        shipment for shipment in best_discarded_shipments
+        if (shipment.get_shipment_id(), shipment.get_line().get_product().get_product_id()) not in assigned_shipments_details
+    ]
 
     # Print the optimal configuration and truck routes
     print(f"Optimal number of clusters: {optimal_clusters}")
@@ -171,5 +198,7 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
         print(f"Driver: {truck_route['driver']}")
         print(f"Delivery Points: {truck_route['delivery_points']}")
         print(f"Full Route: {truck_route['full_route']}")
+        print(f"Total Shipments: {truck_route['total_shipments']}")
+        print(f"Shipments on truck: {truck_route['shipments']}")
 
     return best_truck_routes, best_simulation_cost, best_discarded_shipments
