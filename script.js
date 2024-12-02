@@ -20,9 +20,6 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="loader ease-linear rounded-full border-8 border-t-8 border-[var(--teal)] h-16 w-16 mb-4"></div>
             <h2 class="text-[var(--teal)] text-xl font-semibold mb-2">Generando rutas...</h2>
             <p class="text-[var(--teal)] mb-4">Por favor, espere un momento.</p>
-            <div class="progress-bar-container w-3/4">
-                <div class="progress-bar"></div>
-            </div>
         </div>
     `;
     document.body.appendChild(loadingContainer);
@@ -44,28 +41,6 @@ document.addEventListener("DOMContentLoaded", function () {
         @keyframes spinner {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        .progress-bar-container {
-            width: 80%;
-            height: 10px;
-            background-color: #e0e0e0;
-            border-radius: 5px;
-            overflow: hidden;
-            margin: 0 auto;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0;
-            background-color: #3498db;
-            animation: progressBar 3s ease-in-out infinite;
-        }
-
-        @keyframes progressBar {
-            0% { width: 0; }
-            50% { width: 70%; }
-            100% { width: 100%; }
         }
     `;
     document.head.appendChild(loaderStyle);
