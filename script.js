@@ -5,11 +5,69 @@ document.addEventListener("DOMContentLoaded", function () {
     const generalRouteButton = document.getElementById("generalRouteButton");
     const mapSection = document.getElementById("map-section");
     const buttonsSection = document.getElementById("buttons-section");
-    let costChart = null;  // Variable para almacenar la instancia del gráfico
+    let costChart = null;
 
     // Inicialmente ocultar el iframe del mapa y el contenedor de las rutas
     mapSection.style.display = "none";
     buttonsSection.style.display = "none";
+
+    // Crear formulario de configuración inicial
+    const formContainer = document.createElement("div");
+    formContainer.className = "container mx-auto mb-8 p-6 bg-white rounded-lg shadow-md border-2 border-[var(--teal)]";
+    formContainer.innerHTML = `
+        <h3 class="text-xl font-semibold text-[var(--lapis-lazuli)] mb-4">Configuración Inicial</h3>
+        <form id="initialConfigForm" class="space-y-4">
+            <div>
+                <label class="block font-semibold">Velocidad Media de los Camiones (km/h):</label>
+                <input type="number" id="speed" class="w-full px-3 py-2 border rounded-md" value="90" min="1" required>
+            </div>
+            <div>
+                <label class="block font-semibold">Tiempo de Jornada (horas):</label>
+                <input type="number" id="workHours" class="w-full px-3 py-2 border rounded-md" value="8" min="1" required>
+            </div>
+            <div>
+                <label class="block font-semibold">Tiempo de Descanso (horas):</label>
+                <input type="number" id="restHours" class="w-full px-3 py-2 border rounded-md" value="16" min="1" required>
+            </div>
+            <div>
+                <label class="block font-semibold">Sueldo Camioneros (€ / hora):</label>
+                <input type="number" id="driverSalary" class="w-full px-3 py-2 border rounded-md" value="15" min="0" step="0.01" required>
+            </div>
+            <div>
+                <label class="block font-semibold">Precio de Gasolina (€/km):</label>
+                <input type="number" id="fuelPrice" class="w-full px-3 py-2 border rounded-md" value="1.5" min="0" step="0.01" required>
+            </div>
+            <div>
+                <label class="block font-semibold">Capacidad de los Camiones (kg):</label>
+                <input type="number" id="truckCapacity" class="w-full px-3 py-2 border rounded-md" value="2000" min="1" required>
+            </div>
+            <button type="submit" class="px-6 py-2 mt-4 bg-[var(--teal)] text-white rounded-lg shadow-md hover:bg-[var(--persian-green)] transition">
+                Guardar Configuración
+            </button>
+        </form>
+    `;
+    document.body.insertBefore(formContainer, document.querySelector(".container"));
+
+    // Bloquear el botón "Generar Ruta" hasta que se complete el formulario
+    generateRouteButton.disabled = true;
+
+    // Manejar el envío del formulario de configuración inicial
+    document.getElementById("initialConfigForm").addEventListener("submit", function (e) {
+        e.preventDefault(); // Evitar el envío por defecto del formulario
+
+        // Habilitar el botón "Generar Ruta" al guardar la configuración
+        generateRouteButton.disabled = false;
+
+        // Ocultar el formulario
+        formContainer.style.display = "none";
+
+        Swal.fire({
+            icon: 'success',
+            title: '¡Configuración guardada!',
+            text: 'Ahora puedes generar la ruta.',
+            confirmButtonText: 'Aceptar'
+        });
+    });
 
     // Crear e insertar el indicador de carga (barra de progreso y spinner)
     const loadingContainer = document.createElement("div");
@@ -58,7 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("route-details-container")?.remove();
         document.getElementById("general-details-container")?.remove();
         if (costChart) {
-            costChart.destroy();  // Destruir el gráfico si ya existe uno
+            costChart.destroy(); // Destruir el gráfico si ya existe uno
         }
 
         // Hacer una solicitud GET al servidor Python
@@ -206,7 +264,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         // Añadir información de la ruta
                         const routeInfo = `
-                            <h3 class="text-lg font-semibold text-[var(--teal)] mb-2">Detalles de la Ruta del Camión ${routeData.truck_id}</h3>
+                            <h3 class="text-lg font-semibold text-[var(--teal)] mb-2">Detalles de la Ruta del Camión                             ${routeData.truck_id}</h3>
                             <p><strong>Conductor:</strong> ${routeData.driver}</p>
                             <details class="bg-gray-100 p-3 rounded-lg shadow-md mb-2">
                                 <summary class="font-semibold text-[var(--lapis-lazuli)] cursor-pointer">
@@ -217,7 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                         const isDeliveryPoint = routeData.delivery_points.includes(location);
                                         return `
                                             <li class="mb-1">
-                                                                                                <strong>Punto ${index + 1}:</strong> 
+                                                <strong>Punto ${index + 1}:</strong> 
                                                 <span class="${isDeliveryPoint ? 'text-[var(--persian-green)] font-bold' : ''}">
                                                     ${location} ${isDeliveryPoint ? '🚚' : ''}
                                                 </span>
@@ -312,4 +370,3 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
-
