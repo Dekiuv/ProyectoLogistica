@@ -1,9 +1,8 @@
 from sklearn.cluster import KMeans
 import numpy as np
-import matplotlib.pyplot as plt
+import datetime
 from dijkstra import dijkstra
 from truck_operations import create_new_truck, assign_shipments_to_truck, create_next_driver
-import datetime
 
 # Simulate shipments with clustering approach and automatic optimization of clusters
 def simulate_shipments_with_clustering(trucks, shipments, constants, connections, locations):
@@ -13,6 +12,8 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
     best_truck_routes = []
     best_simulation_cost = 0
     best_discarded_shipments = []  # To track discarded shipments for the best configuration
+    best_total_revenue = 0  # To track total revenue for the best configuration
+    best_net_profit = 0  # To track net profit for the best configuration
 
     # Constants for the simulation
     velocity = constants[0].get_velocity()  # Velocity of the truck in km/h
@@ -45,6 +46,7 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
         truck_routes = []
         discarded_shipments = []  # Track discarded shipments for this configuration
         total_simulation_cost = 0
+        total_revenue = 0  # Track total revenue for this configuration
 
         # Iterate through each cluster and simulate shipments for that cluster
         for cluster_label, cluster_shipments in clusters.items():
@@ -95,7 +97,6 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
 
                 # Calculate the total time required in days including rest periods
                 total_days = total_time / workday_time
-                print(f"{total_days}  = {total_time} / {workday_time}")
                 # Check if the shipment can be delivered before product expiration
                 if total_days > days_until_expiration:
                     print(f"Warning: Shipment {shipment.get_shipment_id()} with product {product.get_name()} cannot reach destination on time. Skipping shipment.", 
@@ -112,6 +113,10 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                 total_simulation_cost += total_route_cost
                 route_cost += total_route_cost
 
+                # Calculate the revenue generated from the shipment
+                revenue = sum(s.get_line().get_quantity() * s.get_line().get_product().get_price() for s in same_location_shipments)
+                total_revenue += revenue
+
                 # Assign the shipments to the current truck
                 total_quantity = sum(s.get_line().get_quantity() for s in same_location_shipments)
                 if current_truck.get_capacity() >= total_quantity:
@@ -126,7 +131,8 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                                 "product_id": s.get_line().get_product().get_product_id(),
                                 "name": s.get_line().get_product().get_name(),
                                 "expiration": s.get_line().get_product().get_expiration_from_manufacturing(),
-                                "manufacturing_time": s.get_line().get_product().get_manufacturing_time()
+                                "manufacturing_time": s.get_line().get_product().get_manufacturing_time(),
+                                "price": s.get_line().get_product().get_price()
                             }
                         })
                 else:
@@ -144,7 +150,8 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                                 "product_id": s.get_line().get_product().get_product_id(),
                                 "name": s.get_line().get_product().get_name(),
                                 "expiration": s.get_line().get_product().get_expiration_from_manufacturing(),
-                                "manufacturing_time": s.get_line().get_product().get_manufacturing_time()
+                                "manufacturing_time": s.get_line().get_product().get_manufacturing_time(),
+                                "price": s.get_line().get_product().get_price()
                             }
                         })
 
@@ -156,24 +163,28 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                 # Add the final delivery point
                 delivery_points.append(location.get_name())
 
-            # Store truck route, cost, shipment, and product information
-            truck_routes.append({
-                "truck_id": current_truck.get_truck_id(),
-                "delivery_points": delivery_points,  # Only delivery points
-                "full_route": route,  # List of all route points (intermediate and final)
-                "route_cost": route_cost,
-                "driver": current_truck.get_driver().get_name(),
-                "total_shipments": len(truck_shipments),  # Total number of shipments on the truck
-                "shipments": truck_shipments  # Shipments assigned to this truck with product details
-            })
+            # Store truck route, cost, shipment, and product information only if it has shipments
+            if truck_shipments:
+                truck_routes.append({
+                    "truck_id": current_truck.get_truck_id(),
+                    "delivery_points": delivery_points,
+                    "full_route": route,
+                    "route_cost": route_cost,
+                    "driver": current_truck.get_driver().get_name(),
+                    "total_shipments": len(truck_shipments),
+                    "shipments": truck_shipments
+                })
 
         # Check if the current clustering configuration has a lower cost
+        net_profit = total_revenue - total_simulation_cost
         if total_simulation_cost < lowest_cost:
             lowest_cost = total_simulation_cost
             optimal_clusters = num_clusters
             best_truck_routes = truck_routes
             best_simulation_cost = total_simulation_cost
             best_discarded_shipments = discarded_shipments
+            best_total_revenue = total_revenue
+            best_net_profit = net_profit
 
     # Remove shipments from discarded list if they are actually on a truck
     assigned_shipments_details = set(
@@ -189,6 +200,8 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
     # Print the optimal configuration and truck routes
     print(f"Optimal number of clusters: {optimal_clusters}")
     print(f"Total cost of all shipments: {best_simulation_cost:.2f} €")
+    print(f"Total revenue from all shipments: {best_total_revenue:.2f} €")
+    print(f"Net profit from all shipments: {best_net_profit:.2f} €")
     print(f"Number of discarded shipments: {len(best_discarded_shipments)}")
 
     for truck_route in best_truck_routes:
@@ -200,4 +213,4 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
         print(f"Total Shipments: {truck_route['total_shipments']}")
         print(f"Shipments on truck: {truck_route['shipments']}")
 
-    return best_truck_routes, best_simulation_cost, best_discarded_shipments
+    return best_truck_routes, best_simulation_cost, best_discarded_shipments, best_total_revenue, best_net_profit

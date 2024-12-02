@@ -7,18 +7,21 @@ last_driver_id = 'A'
 # Function to automatically create the next Driver instance
 def create_next_driver(base_name="Driver", base_hourly_pay=20):
     global last_driver_id
-    
-    # Get the next letter in the sequence
-    driver_id = chr(ord(last_driver_id) + 1)
-    driver_id2 = chr(ord(last_driver_id) + 5)
-    
-    # Create driver instance
-    name = f"{base_name} {driver_id}.{driver_id2}"  # e.g., 'Driver B', 'Driver C', etc.
-    hourly_pay = base_hourly_pay + random.uniform(-5, 5)  # Randomly vary hourly pay within ±5
-    
-    # Update last driver id to the current one
-    last_driver_id = driver_id
-    
+
+    # Asegurarse de que solo se utilizan letras del alfabeto
+    if last_driver_id > 'Z':
+        last_driver_id = 'A'  # Reiniciar al principio si excedemos 'Z'
+
+    # Obtener la siguiente letra en la secuencia
+    driver_id = last_driver_id
+
+    # Crear instancia de Driver con un nombre secuencial basado en letras
+    name = f"{base_name} {driver_id}"  # e.g., 'Driver A', 'Driver B', etc.
+    hourly_pay = base_hourly_pay + random.uniform(-5, 5)  # Varia el salario dentro de ±5
+
+    # Actualizar el último id de conductor al siguiente carácter en la secuencia alfabética
+    last_driver_id = chr(ord(last_driver_id) + 1)  # Avanzar a la siguiente letra del alfabeto
+
     driver = Driver(driver_id=driver_id, name=name, hourly_pay=hourly_pay)
     
     return driver

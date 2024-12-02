@@ -22,6 +22,42 @@
         <h1 class="text-3xl font-bold text-center text-[var(--lapis-lazuli)] mb-8">
             Logística de la Península
         </h1>
+        <div class="container mx-auto mb-6" id="constantsFormContainer">
+            <form id="constantsForm" class="bg-white p-6 rounded-lg shadow-md border-2 border-[var(--teal)]">
+                <h2 class="text-lg font-semibold text-[var(--teal)] mb-4">Configuración Inicial</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="velocity" class="block font-semibold">Velocidad Media de los Camiones (km/h):</label>
+                        <input type="number" id="velocity" class="w-full px-3 py-2 border rounded-lg" value="90" required>
+                    </div>
+                    <div>
+                        <label for="workdayTime" class="block font-semibold">Tiempo de Jornada (h):</label>
+                        <input type="number" id="workdayTime" class="w-full px-3 py-2 border rounded-lg" value="8" required>
+                    </div>
+                    <div>
+                        <label for="restTime" class="block font-semibold">Tiempo de Descanso (h):</label>
+                        <input type="number" id="restTime" class="w-full px-3 py-2 border rounded-lg" value="16" required>
+                    </div>
+                    <div>
+                        <label for="driversHourlyPay" class="block font-semibold">Sueldo de Camioneros (€/h):</label>
+                        <input type="number" id="driversHourlyPay" class="w-full px-3 py-2 border rounded-lg" value="15" required>
+                    </div>
+                    <div>
+                        <label for="fuelCostKm" class="block font-semibold">Precio Gasolina por km (€/km):</label>
+                        <input type="number" id="fuelCostKm" class="w-full px-3 py-2 border rounded-lg" value="0.1" required>
+                    </div>
+                    <div>
+                        <label for="truckCapacity" class="block font-semibold">Capacidad de los Camiones (kg):</label>
+                        <input type="number" id="truckCapacity" class="w-full px-3 py-2 border rounded-lg" value="2000" required>
+                    </div>
+                </div>
+                <div class="flex justify-center mt-6">
+                    <button type="submit" class="px-6 py-2 bg-[var(--teal)] text-white rounded-lg shadow-md hover:bg-[var(--persian-green)] transition">
+                        Enviar Configuración
+                    </button>
+                </div>
+            </form>
+        </div>
         
         <div class="flex justify-center mb-6 button-generate">
             <button id="generateRoute" 

@@ -5,67 +5,63 @@ document.addEventListener("DOMContentLoaded", function () {
     const generalRouteButton = document.getElementById("generalRouteButton");
     const mapSection = document.getElementById("map-section");
     const buttonsSection = document.getElementById("buttons-section");
-    let costChart = null;
+    const constantsForm = document.getElementById("constantsForm");
+    const constantsFormContainer = document.getElementById("constantsFormContainer");
+    let costChart = null;  // Variable para almacenar la instancia del gráfico de costos
+    let profitChart = null; // Variable para almacenar la instancia del gráfico de beneficios
 
-    // Inicialmente ocultar el iframe del mapa y el contenedor de las rutas
+    // Inicialmente ocultar el iframe del mapa y el contenedor de las rutas y el botón de generar ruta
     mapSection.style.display = "none";
     buttonsSection.style.display = "none";
-
-    // Crear formulario de configuración inicial
-    const formContainer = document.createElement("div");
-    formContainer.className = "container mx-auto mb-8 p-6 bg-white rounded-lg shadow-md border-2 border-[var(--teal)]";
-    formContainer.innerHTML = `
-        <h3 class="text-xl font-semibold text-[var(--lapis-lazuli)] mb-4">Configuración Inicial</h3>
-        <form id="initialConfigForm" class="space-y-4">
-            <div>
-                <label class="block font-semibold">Velocidad Media de los Camiones (km/h):</label>
-                <input type="number" id="speed" class="w-full px-3 py-2 border rounded-md" value="90" min="1" required>
-            </div>
-            <div>
-                <label class="block font-semibold">Tiempo de Jornada (horas):</label>
-                <input type="number" id="workHours" class="w-full px-3 py-2 border rounded-md" value="8" min="1" required>
-            </div>
-            <div>
-                <label class="block font-semibold">Tiempo de Descanso (horas):</label>
-                <input type="number" id="restHours" class="w-full px-3 py-2 border rounded-md" value="16" min="1" required>
-            </div>
-            <div>
-                <label class="block font-semibold">Sueldo Camioneros (€ / hora):</label>
-                <input type="number" id="driverSalary" class="w-full px-3 py-2 border rounded-md" value="15" min="0" step="0.01" required>
-            </div>
-            <div>
-                <label class="block font-semibold">Precio de Gasolina (€/km):</label>
-                <input type="number" id="fuelPrice" class="w-full px-3 py-2 border rounded-md" value="1.5" min="0" step="0.01" required>
-            </div>
-            <div>
-                <label class="block font-semibold">Capacidad de los Camiones (kg):</label>
-                <input type="number" id="truckCapacity" class="w-full px-3 py-2 border rounded-md" value="2000" min="1" required>
-            </div>
-            <button type="submit" class="px-6 py-2 mt-4 bg-[var(--teal)] text-white rounded-lg shadow-md hover:bg-[var(--persian-green)] transition">
-                Guardar Configuración
-            </button>
-        </form>
-    `;
-    document.body.insertBefore(formContainer, document.querySelector(".container"));
-
-    // Bloquear el botón "Generar Ruta" hasta que se complete el formulario
     generateRouteButton.disabled = true;
 
-    // Manejar el envío del formulario de configuración inicial
-    document.getElementById("initialConfigForm").addEventListener("submit", function (e) {
-        e.preventDefault(); // Evitar el envío por defecto del formulario
+    // Manejar el envío del formulario de constantes
+    constantsForm.addEventListener("submit", function (event) {
+        event.preventDefault(); // Evitar el envío por defecto
 
-        // Habilitar el botón "Generar Ruta" al guardar la configuración
-        generateRouteButton.disabled = false;
+        // Recopilar valores del formulario
+        const constants = {
+            velocity: document.getElementById("velocity").value,
+            workdayTime: document.getElementById("workdayTime").value,
+            restTime: document.getElementById("restTime").value,
+            driversHourlyPay: document.getElementById("driversHourlyPay").value,
+            fuelCostKm: document.getElementById("fuelCostKm").value,
+            truckCapacity: document.getElementById("truckCapacity").value,
+        };
 
-        // Ocultar el formulario
-        formContainer.style.display = "none";
-
-        Swal.fire({
-            icon: 'success',
-            title: '¡Configuración guardada!',
-            text: 'Ahora puedes generar la ruta.',
-            confirmButtonText: 'Aceptar'
+        // Enviar valores al servidor
+        fetch("http://localhost:8000/set_constants", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(constants),
+        })
+        .then((response) => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error("Error al enviar la configuración");
+            }
+        })
+        .then((data) => {
+            Swal.fire({
+                icon: "success",
+                title: "¡Configuración enviada!",
+                text: "Ahora puedes generar las rutas.",
+                confirmButtonText: "Aceptar",
+            });
+            generateRouteButton.disabled = false; // Habilitar el botón de generar ruta
+            constantsFormContainer.style.display = "none"; // Ocultar el formulario
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+            Swal.fire({
+                icon: "error",
+                title: "¡Ups!",
+                text: "Hubo un problema al enviar la configuración.",
+                confirmButtonText: "Aceptar",
+            });
         });
     });
 
@@ -116,10 +112,13 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("route-details-container")?.remove();
         document.getElementById("general-details-container")?.remove();
         if (costChart) {
-            costChart.destroy(); // Destruir el gráfico si ya existe uno
+            costChart.destroy();  // Destruir el gráfico de costos si ya existe uno
+        }
+        if (profitChart) {
+            profitChart.destroy(); // Destruir el gráfico de beneficios si ya existe uno
         }
 
-        // Hacer una solicitud GET al servidor Python
+        // Hacer una solicitud GET al servidor Python para generar la ruta
         fetch("http://localhost:8000/generar_ruta")
             .then((response) => {
                 if (response.ok) {
@@ -148,14 +147,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Insertar el contenedor debajo del mapa
                 mapSection.appendChild(generalDetailsContainer);
 
-                // Añadir información general sobre las rutas (Número total de camiones y costo total)
-                const totalCost = data.routes.reduce((acc, route) => acc + route.route_cost, 0).toFixed(2);
+                // Añadir información general sobre las rutas (Número total de camiones, costo total, ingresos totales, ganancia neta)
+                const totalCost = data.total_cost.toFixed(2);
+                const totalRevenue = data.best_total_revenue.toFixed(2);
+                const netProfit = data.best_net_profit.toFixed(2);
+                const netProfitClass = netProfit >= 0 ? 'text-green-600' : 'text-red-600';
+
                 generalDetailsContainer.innerHTML = `
                     <h3 class="text-lg font-semibold text-[var(--teal)] mb-2">Información General</h3>
                     <p><strong>Total de Camiones:</strong> ${data.routes.length}</p>
                     <p><strong>Costo Total de las Rutas:</strong> ${totalCost} €</p>
+                    <p><strong>Ingresos Totales de los Envíos:</strong> ${totalRevenue} €</p>
+                    <p><strong>Ganancia Neta:</strong> <span class="font-bold ${netProfitClass}">${netProfit} €</span></p>
+
                     <div class="mt-4">
                         <canvas id="costChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="mt-4">
+                        <canvas id="profitChart" width="400" height="200"></canvas>
                     </div>
                 `;
 
@@ -226,6 +235,53 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 });
 
+                // Crear el gráfico de ganancias por ruta
+                const profitCtx = document.getElementById('profitChart').getContext('2d');
+                const truckProfits = data.routes.map(route => {
+                    const routeRevenue = route.shipments.reduce((acc, shipment) => acc + (shipment.product.price * shipment.quantity), 0);
+                    return (routeRevenue - route.route_cost).toFixed(2);
+                });
+
+                profitChart = new Chart(profitCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: truckLabels,
+                        datasets: [
+                            {
+                                label: 'Ganancia Neta por Ruta (€)',
+                                data: truckProfits,
+                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Ganancia Neta (€)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Camiones'
+                                }
+                            }
+                        }
+                    }
+                });
+
                 // Generar botones para cada ruta
                 const totalTrucks = data.routes.length;
                 for (let i = 0; i < totalTrucks; i++) {
@@ -263,9 +319,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         routeDetailsContainer.innerHTML = "";
 
                         // Añadir información de la ruta
+                        const routeRevenue = routeData.shipments.reduce((acc, shipment) => acc + (shipment.product.price * shipment.quantity), 0).toFixed(2);
+                        const routeProfit = (routeRevenue - routeData.route_cost).toFixed(2);
+
                         const routeInfo = `
-                            <h3 class="text-lg font-semibold text-[var(--teal)] mb-2">Detalles de la Ruta del Camión                             ${routeData.truck_id}</h3>
+                            <h3 class="text-lg font-semibold text-[var(--teal)] mb-2">Detalles de la Ruta del Camión ${routeData.truck_id}</h3>
                             <p><strong>Conductor:</strong> ${routeData.driver}</p>
+                            <p><strong>Ingresos por la Ruta:</strong> ${routeRevenue} €</p>
+                            <p><strong>Ganancia Neta de la Ruta:</strong> ${routeProfit} €</p>
                             <details class="bg-gray-100 p-3 rounded-lg shadow-md mb-2">
                                 <summary class="font-semibold text-[var(--lapis-lazuli)] cursor-pointer">
                                     Ruta Completa
@@ -309,6 +370,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                         <li><strong>ID del Producto:</strong> ${shipment.product.product_id}</li>
                                         <li><strong>Nombre del Producto:</strong> ${shipment.product.name}</li>
                                         <li><strong>Cantidad:</strong> ${shipment.quantity}</li>
+                                        <li><strong>Precio:</strong> ${shipment.product.price} €</li>
                                         <li><strong>Tiempo de Fabricación:</strong> ${shipment.product.manufacturing_time} días</li>
                                         <li><strong>Vencimiento desde Fabricación:</strong> ${shipment.product.expiration} días</li>
                                     </ul>
@@ -364,7 +426,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Limpiar los detalles de la ruta
                 const routeDetailsContainer = document.getElementById("route-details-container");
                 if (routeDetailsContainer) {
-                    routeDetailsContainer.innerHTML = "";
+                    routeDetailsContainer.remove();
                 }
             }
         });

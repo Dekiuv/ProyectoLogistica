@@ -64,4 +64,4 @@ def load_all_data():
         print("Error: Failed to create Constant objects. Please check the import path or class definition.")
         constants = []
 
-    return locations, products, clients, connections, lines, shipments, constants
+    return locations, products, clients, connections, lines, shipments
