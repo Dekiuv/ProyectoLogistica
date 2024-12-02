@@ -107,7 +107,7 @@ with open('./Data/Ubicacion.csv', newline='', encoding='utf-8') as csvfile:
 
     # Insertar los datos en la tabla Locations
     for row in reader:
-        provincia = row[1]  # Provincia
+        provincia = row[0]  # Provincia
         latitud = row[2].replace(',', '.')  # Reemplazar la coma por punto para el formato decimal
         longitud = row[3].replace(',', '.')  # Reemplazar la coma por punto para el formato decimal
 
