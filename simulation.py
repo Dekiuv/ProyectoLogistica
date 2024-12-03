@@ -56,124 +56,122 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
             # Sort shipments in cluster by closest expiration date
             shipments_sorted = sorted(cluster_shipments, key=lambda s: s.get_line().get_product().get_manufacturing_time() + s.get_line().get_product().get_expiration_from_manufacturing())
 
-            # Create a new truck for each cluster (or reuse if possible)
-            current_truck = create_new_truck(len(used_trucks) + 1, create_next_driver(), constants)
-            used_trucks.append(current_truck)
+            # Allocate shipments to trucks
+            while shipments_sorted:
+                current_truck = create_new_truck(len(used_trucks) + 1, create_next_driver(), constants)
+                used_trucks.append(current_truck)
 
-            route = []  # Complete route including intermediate points
-            delivery_points = []  # Only final delivery points (i.e., shipment destinations)
-            route_cost = 0
-            truck_shipments = []  # Track the shipments assigned to this truck
+                route = []  # Complete route including intermediate points
+                delivery_points = []  # Only final delivery points (i.e., shipment destinations)
+                route_cost = 0
+                truck_shipments = []  # Track the shipments assigned to this truck
 
-            for shipment in shipments_sorted:
-                location = shipment.get_location()
-                product = shipment.get_line().get_product()
-                expiration_date = today + datetime.timedelta(days=product.get_manufacturing_time() + product.get_expiration_from_manufacturing())
-                days_until_expiration = (expiration_date - today).days
+                # Continue assigning shipments until truck capacity is reached or shipments are exhausted
+                while shipments_sorted:
+                    shipment = shipments_sorted[0]
+                    location = shipment.get_location()
+                    product = shipment.get_line().get_product()
+                    expiration_date = today + datetime.timedelta(days=product.get_manufacturing_time() + product.get_expiration_from_manufacturing())
+                    days_until_expiration = (expiration_date - today).days
 
-                # Skip shipment if location is None
-                if location is None:
-                    print("Warning: Shipment location is None, skipping shipment.")
-                    discarded_shipments.append(shipment)
-                    continue
+                    # Skip shipment if location is None
+                    if location is None:
+                        print("Warning: Shipment location is None, skipping shipment.")
+                        discarded_shipments.append(shipments_sorted.pop(0))
+                        continue
 
-                # Skip if location already assigned to a truck
-                if location in assigned_locations:
-                    discarded_shipments.append(shipment)
-                    continue
+                    # Set origin to either the last assigned location or Mataró
+                    last_location = current_truck.get_shipments()[-1].get_location() if current_truck.get_shipments() else next((loc for loc in locations if loc.get_name() == 'Mataró'), None)
 
-                # Find all shipments for the same location
-                same_location_shipments = [s for s in shipments_sorted if s.get_location() == location]
+                    if last_location is None:
+                        print("Error: Starting location 'Mataró' not found.")
+                        return
 
-                # Set origin to either the last assigned location or Mataró
-                last_location = current_truck.get_shipments()[-1].get_location() if current_truck.get_shipments() else next((loc for loc in locations if loc.get_name() == 'Mataró'), None)
+                    # Calculate shortest distance and time to the destination using Dijkstra
+                    total_time, total_distance, path = dijkstra(locations, connections, last_location.get_name(), location.get_name(), velocity, workday_time, rest_time)
 
-                if last_location is None:
-                    print("Error: Starting location 'Mataró' not found.")
-                    return
+                    # Calculate the total time required in days including rest periods
+                    total_days = total_time / workday_time
+                    # Check if the shipment can be delivered before product expiration
+                    if total_days > days_until_expiration:
+                        print(f"Warning: Shipment {shipment.get_shipment_id()} with product {product.get_name()} cannot reach destination on time. Skipping shipment.", 
+                              f"Days needed: {total_days}, days_until_expiration: {days_until_expiration}")
+                        discarded_shipments.append(shipments_sorted.pop(0))
+                        continue
 
-                # Calculate shortest distance and time to the destination using Dijkstra
-                total_time, total_distance, path = dijkstra(locations, connections, last_location.get_name(), location.get_name(), velocity, workday_time, rest_time)
+                    # Calculate the costs for this route
+                    fuel_cost = total_distance * fuel_cost_per_km
+                    driver_cost = total_time * drivers_hourly_pay
+                    total_route_cost = fuel_cost + driver_cost
 
-                # Calculate the total time required in days including rest periods
-                total_days = total_time / workday_time
-                # Check if the shipment can be delivered before product expiration
-                if total_days > days_until_expiration:
-                    print(f"Warning: Shipment {shipment.get_shipment_id()} with product {product.get_name()} cannot reach destination on time. Skipping shipment.", 
-                          f"Days needed: {total_days}, days_until_expiration: {days_until_expiration}")
-                    discarded_shipments.append(shipment)
-                    continue
+                    # Accumulate total cost of all routes in the simulation
+                    total_simulation_cost += total_route_cost
+                    route_cost += total_route_cost
 
-                # Calculate the costs for this route
-                fuel_cost = total_distance * fuel_cost_per_km
-                driver_cost = total_time * drivers_hourly_pay
-                total_route_cost = fuel_cost + driver_cost
+                    # Calculate the revenue generated from the shipment
+                    revenue = shipment.get_line().get_quantity() * product.get_price()
+                    total_revenue += revenue
 
-                # Accumulate total cost of all routes in the simulation
-                total_simulation_cost += total_route_cost
-                route_cost += total_route_cost
-
-                # Calculate the revenue generated from the shipment
-                revenue = sum(s.get_line().get_quantity() * s.get_line().get_product().get_price() for s in same_location_shipments)
-                total_revenue += revenue
-
-                # Assign the shipments to the current truck
-                total_quantity = sum(s.get_line().get_quantity() for s in same_location_shipments)
-                if current_truck.get_capacity() >= total_quantity:
-                    assign_shipments_to_truck(current_truck, same_location_shipments)
-                    assigned_locations.add(location)
-                    # Add shipments and product info to the truck's record
-                    for s in same_location_shipments:
+                    # Check the truck capacity and assign shipments accordingly
+                    total_quantity = shipment.get_line().get_quantity()
+                    if current_truck.get_capacity() >= total_quantity:
+                        assign_shipments_to_truck(current_truck, [shipment])
                         truck_shipments.append({
-                            "shipment_id": s.get_shipment_id(),
-                            "quantity": s.get_line().get_quantity(),
+                            "shipment_id": shipment.get_shipment_id(),
+                            "quantity": shipment.get_line().get_quantity(),
                             "product": {
-                                "product_id": s.get_line().get_product().get_product_id(),
-                                "name": s.get_line().get_product().get_name(),
-                                "expiration": s.get_line().get_product().get_expiration_from_manufacturing(),
-                                "manufacturing_time": s.get_line().get_product().get_manufacturing_time(),
-                                "price": s.get_line().get_product().get_price()
+                                "product_id": product.get_product_id(),
+                                "name": product.get_name(),
+                                "expiration": product.get_expiration_from_manufacturing(),
+                                "manufacturing_time": product.get_manufacturing_time(),
+                                "price": product.get_price()
                             }
                         })
-                else:
-                    # If the current truck cannot handle the shipment, create a new truck for overflow
-                    new_truck = create_new_truck(len(used_trucks) + 1, create_next_driver(), constants)
-                    assign_shipments_to_truck(new_truck, same_location_shipments)
-                    assigned_locations.add(location)
-                    used_trucks.append(new_truck)
-                    # Add shipments and product info to the truck's record
-                    for s in same_location_shipments:
-                        truck_shipments.append({
-                            "shipment_id": s.get_shipment_id(),
-                            "quantity": s.get_line().get_quantity(),
-                            "product": {
-                                "product_id": s.get_line().get_product().get_product_id(),
-                                "name": s.get_line().get_product().get_name(),
-                                "expiration": s.get_line().get_product().get_expiration_from_manufacturing(),
-                                "manufacturing_time": s.get_line().get_product().get_manufacturing_time(),
-                                "price": s.get_line().get_product().get_price()
-                            }
-                        })
+                        delivery_points.append(location.get_name())
+                        shipments_sorted.pop(0)  # Remove assigned shipment from the list
+                    else:
+                        # If current truck cannot accommodate the shipment, break and start a new truck
+                        break
 
-                # Update route information, including all intermediate locations
-                for loc in path:
-                    if loc.get_name() not in route:
-                        route.append(loc.get_name())
+                    # Update route information, including all intermediate locations
+                    for loc in path:
+                        if loc.get_name() not in route:
+                            route.append(loc.get_name())
 
-                # Add the final delivery point
-                delivery_points.append(location.get_name())
+                # Calculate the cost and route for returning to Mataró
+                return_route = []
+                return_route_cost = 0
+                if delivery_points:
+                    last_location = route[-1]
+                    mataró_location = next((loc for loc in locations if loc.get_name() == 'Mataró'), None)
 
-            # Store truck route, cost, shipment, and product information only if it has shipments
-            if truck_shipments:
-                truck_routes.append({
-                    "truck_id": current_truck.get_truck_id(),
-                    "delivery_points": delivery_points,
-                    "full_route": route,
-                    "route_cost": route_cost,
-                    "driver": current_truck.get_driver().get_name(),
-                    "total_shipments": len(truck_shipments),
-                    "shipments": truck_shipments
-                })
+                    if last_location and mataró_location:
+                        return_time, return_distance, return_path = dijkstra(locations, connections, last_location, "Mataró", velocity, workday_time, rest_time)
+                        
+                        # Calculate the costs for returning to Mataró
+                        return_fuel_cost = return_distance * fuel_cost_per_km
+                        return_driver_cost = return_time * drivers_hourly_pay
+                        return_route_cost = return_fuel_cost + return_driver_cost
+
+                        # Accumulate the return cost to the total cost
+                        total_simulation_cost += return_route_cost
+                        route_cost += return_route_cost
+                        return_route = []
+                        for loc in return_path:
+                            return_route.append(loc.get_name())
+                        
+                # Store truck route, cost, shipment, and product information only if it has shipments
+                if truck_shipments:
+                    truck_routes.append({
+                        "truck_id": current_truck.get_truck_id(),
+                        "delivery_points": delivery_points,
+                        "full_route": route,
+                        "route_to_mataró": return_route,
+                        "route_cost": route_cost,
+                        "driver": current_truck.get_driver().get_name(),
+                        "total_shipments": len(truck_shipments),
+                        "shipments": truck_shipments
+                    })
 
         # Check if the current clustering configuration has a lower cost
         net_profit = total_revenue - total_simulation_cost
@@ -186,20 +184,9 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
             best_total_revenue = total_revenue
             best_net_profit = net_profit
 
-    # Remove shipments from discarded list if they are actually on a truck
-    assigned_shipments_details = set(
-        (shipment["shipment_id"], shipment["product"]["product_id"])
-        for truck in best_truck_routes
-        for shipment in truck["shipments"]
-    )
-    best_discarded_shipments = [
-        shipment for shipment in best_discarded_shipments
-        if (shipment.get_shipment_id(), shipment.get_line().get_product().get_product_id()) not in assigned_shipments_details
-    ]
-
     # Print the optimal configuration and truck routes
     print(f"Optimal number of clusters: {optimal_clusters}")
-    print(f"Total cost of all shipments: {best_simulation_cost:.2f} €")
+    print(f"Total cost of all shipments (including return to Mataró): {best_simulation_cost:.2f} €")
     print(f"Total revenue from all shipments: {best_total_revenue:.2f} €")
     print(f"Net profit from all shipments: {best_net_profit:.2f} €")
     print(f"Number of discarded shipments: {len(best_discarded_shipments)}")
@@ -210,6 +197,7 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
         print(f"Driver: {truck_route['driver']}")
         print(f"Delivery Points: {truck_route['delivery_points']}")
         print(f"Full Route: {truck_route['full_route']}")
+        print(f"Route to Mataró: {truck_route['route_to_mataró']}")
         print(f"Total Shipments: {truck_route['total_shipments']}")
         print(f"Shipments on truck: {truck_route['shipments']}")
 

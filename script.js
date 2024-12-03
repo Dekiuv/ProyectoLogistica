@@ -325,6 +325,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         const routeInfo = `
                             <h3 class="text-lg font-semibold text-[var(--teal)] mb-2">Detalles de la Ruta del Camión ${routeData.truck_id}</h3>
                             <p><strong>Conductor:</strong> ${routeData.driver}</p>
+                            <p><strong>Costo de la Ruta:</strong> ${routeData.route_cost.toFixed(2)} €</p>
+                            <p><strong>Total de Envíos:</strong> ${routeData.total_shipments}</p>
                             <p><strong>Ingresos por la Ruta:</strong> ${routeRevenue} €</p>
                             <p><strong>Ganancia Neta de la Ruta:</strong> ${routeProfit} €</p>
                             <details class="bg-gray-100 p-3 rounded-lg shadow-md mb-2">
@@ -345,8 +347,24 @@ document.addEventListener("DOMContentLoaded", function () {
                                     }).join('')}
                                 </ol>
                             </details>
-                            <p><strong>Costo de la Ruta:</strong> ${routeData.route_cost.toFixed(2)} €</p>
-                            <p><strong>Total de Envíos:</strong> ${routeData.total_shipments}</p>
+                            <details class="bg-gray-100 p-3 rounded-lg shadow-md mb-2">
+                                <summary class="font-semibold text-[var(--lapis-lazuli)] cursor-pointer">
+                                    Ruta de vuelta
+                                </summary>
+                                <ol class="mt-2 text-gray-700 list-decimal ml-5">
+                                    ${routeData.route_to_mataró.map((location, index) => {
+                                        return `
+                                            <li class="mb-1">
+                                                <strong>Punto ${index + 1}:</strong> 
+                                                <span>
+                                                    ${location} 
+                                                </span>
+                                            </li>
+                                        `;
+                                    }).join('')}
+                                </ol>
+                            </details>
+                            
                         `;
 
                         // Añadir información de los envíos al contenedor de detalles
