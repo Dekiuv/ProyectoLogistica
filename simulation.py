@@ -54,7 +54,8 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                 continue
 
             # Sort shipments in cluster by closest expiration date
-            shipments_sorted = sorted(cluster_shipments, key=lambda s: s.get_line().get_product().get_manufacturing_time() + s.get_line().get_product().get_expiration_from_manufacturing())
+            #shipments_sorted = sorted(cluster_shipments, key=lambda s: s.get_line().get_product().get_manufacturing_time() + s.get_line().get_product().get_expiration_from_manufacturing())
+            shipments_sorted = sorted(cluster_shipments, key=lambda s: s.get_line().get_product().get_expiration_from_manufacturing())
 
             # Allocate shipments to trucks
             while shipments_sorted:
@@ -71,7 +72,8 @@ def simulate_shipments_with_clustering(trucks, shipments, constants, connections
                     shipment = shipments_sorted[0]
                     location = shipment.get_location()
                     product = shipment.get_line().get_product()
-                    expiration_date = today + datetime.timedelta(days=product.get_manufacturing_time() + product.get_expiration_from_manufacturing())
+                    # expiration_date = today + datetime.timedelta(days=product.get_manufacturing_time() + product.get_expiration_from_manufacturing())
+                    expiration_date = today + datetime.timedelta(days=product.get_expiration_from_manufacturing())
                     days_until_expiration = (expiration_date - today).days
 
                     # Skip shipment if location is None
