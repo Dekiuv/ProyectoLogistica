@@ -159,13 +159,31 @@ document.addEventListener("DOMContentLoaded", function () {
                     <p><strong>Costo Total de las Rutas:</strong> ${totalCost} €</p>
                     <p><strong>Ingresos Totales de los Envíos:</strong> ${totalRevenue} €</p>
                     <p><strong>Ganancia Neta:</strong> <span class="font-bold ${netProfitClass}">${netProfit} €</span></p>
-
+<details class="bg-gray-100 p-3 rounded-lg shadow-md mt-4">
+        <summary class="font-semibold text-[var(--lapis-lazuli)] cursor-pointer">
+            Envíos Descartados 🚫
+        </summary>
+        <div class="mt-2 text-gray-700">
+            ${data.discarded_shipments.map((shipment, index) => `
+                <details class="mb-2 bg-white p-2 rounded-lg shadow">
+                    <summary><strong>Envío ${index + 1} - ID: ${shipment.shipment_id}</strong></summary>
+                    <ul class="ml-4 mt-2 list-disc">
+                        <li><strong>Razón:</strong> ${shipment.reason}</li>
+                        <li><strong>ID del Producto:</strong> ${shipment.product.product_id}</li>
+                        <li><strong>Nombre del Producto:</strong> ${shipment.product.product_name}</li>
+                        <li><strong>Vencimiento desde Fabricación:</strong> ${shipment.product.expiration_from_manufacturing} días</li>
+                    </ul>
+                </details>
+            `).join('')}
+        </div>
+    </details>
                     <div class="mt-4">
                         <canvas id="costChart" width="400" height="200"></canvas>
                     </div>
                     <div class="mt-4">
                         <canvas id="profitChart" width="400" height="200"></canvas>
                     </div>
+                    
                 `;
 
                 // Crear el gráfico combinado de costos por ruta y envíos
